@@ -1,0 +1,32 @@
+{
+  "signup": {
+    "id": 1,
+    "name": "Alex Rivera",
+    "email": "alex@example.com",
+    "created_at": "2026-05-17T10:00:00"
+  },
+  "note": {
+    "id": 12,
+    "title": "Sprint Review",
+    "content": "# Sprint Review\nDiscuss release.\n- [ ] Write docs",
+    "category": "work",
+    "is_archived": false,
+    "is_public": true,
+    "share_token": "abc123token",
+    "tags": [{ "id": 3, "name": "planning" }],
+    "created_at": "2026-05-17T10:05:00",
+    "updated_at": "2026-05-17T10:20:00"
+  },
+  "ai_summary": {
+    "result": "Sprint Review discusses the release. Key follow-up is writing docs.",
+    "source": "local"
+  },
+  "dashboard": {
+    "total_notes": 8,
+    "archived_notes": 1,
+    "recently_edited": [{ "id": 12, "title": "Sprint Review", "updated_at": "2026-05-17T10:20:00" }],
+    "most_used_tags": [{ "name": "planning", "count": 4 }],
+    "ai_usage": [{ "type": "summary", "count": 6 }],
+    "weekly_activity": [{ "week_start": "2026-05-10", "notes_created": 2, "notes_updated": 5, "ai_requests": 3 }]
+  }
+}

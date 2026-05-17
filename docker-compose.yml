@@ -1,0 +1,16 @@
+# Optional: use PostgreSQL instead of the default SQLite DATABASE_URL.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: orbitnote-db
+    environment:
+      POSTGRES_USER: orbitnote
+      POSTGRES_PASSWORD: orbitnote
+      POSTGRES_DB: orbitnote
+    ports:
+      - "5432:5432"
+    volumes:
+      - orbitnote_pg:/var/lib/postgresql/data
+
+volumes:
+  orbitnote_pg:
