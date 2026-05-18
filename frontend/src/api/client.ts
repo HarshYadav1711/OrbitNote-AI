@@ -1,4 +1,4 @@
-import type { Note, User } from "../types";
+import type { AIGenerateResponse, AIHistoryEntry, Note, User } from "../types";
 
 const API_BASE = "/api";
 
@@ -16,6 +16,11 @@ export type NotePayload = {
   category?: string | null;
   tags?: string[];
   is_archived?: boolean;
+};
+
+export type AIGeneratePayload = {
+  content?: string;
+  title?: string;
 };
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -75,4 +80,20 @@ export const api = {
   }) => request<Note>("/notes", { method: "POST", body: JSON.stringify(body) }),
   updateNote: (id: number, body: NotePayload) =>
     request<Note>(`/notes/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  generateSummary: (id: number, body?: AIGeneratePayload) =>
+    request<AIGenerateResponse>(`/notes/${id}/ai/summary`, {
+      method: "POST",
+      body: JSON.stringify(body ?? {}),
+    }),
+  extractActions: (id: number, body?: AIGeneratePayload) =>
+    request<AIGenerateResponse>(`/notes/${id}/ai/actions`, {
+      method: "POST",
+      body: JSON.stringify(body ?? {}),
+    }),
+  suggestTitle: (id: number, body?: AIGeneratePayload) =>
+    request<AIGenerateResponse>(`/notes/${id}/ai/title`, {
+      method: "POST",
+      body: JSON.stringify(body ?? {}),
+    }),
+  aiHistory: (id: number) => request<AIHistoryEntry[]>(`/notes/${id}/ai/history`),
 };

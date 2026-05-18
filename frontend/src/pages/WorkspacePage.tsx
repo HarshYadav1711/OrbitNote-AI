@@ -130,6 +130,7 @@ export function WorkspacePage() {
           </div>
         ) : (
           <NoteEditor
+            noteId={noteId}
             draft={editor.draft}
             onDraftChange={editor.updateDraft}
             saveStatus={editor.saveStatus}

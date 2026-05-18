@@ -12,6 +12,7 @@ os.environ["DISABLE_MIGRATIONS"] = "1"
 
 from app.database import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
+from app.models import AIHistory  # noqa: E402, F401
 
 engine = create_engine(
     "sqlite://",

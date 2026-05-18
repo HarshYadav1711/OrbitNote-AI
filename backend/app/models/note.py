@@ -33,3 +33,4 @@ class Note(Base):
 
     user = relationship("User", back_populates="notes")
     tags = relationship("Tag", secondary="note_tags", back_populates="notes")
+    ai_history = relationship("AIHistory", back_populates="note", cascade="all, delete-orphan")

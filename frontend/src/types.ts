@@ -20,3 +20,40 @@ export interface Note {
   created_at: string;
   updated_at: string;
 }
+
+export interface ActionItem {
+  text: string;
+  done: boolean;
+}
+
+export interface AISummaryResult {
+  summary: string;
+  bullets: string[];
+}
+
+export interface AIActionsResult {
+  items: ActionItem[];
+}
+
+export interface AITitleResult {
+  title: string;
+}
+
+export interface AIGenerateResponse {
+  type: "summary" | "actions" | "title";
+  provider: string;
+  status: string;
+  history_id: number;
+  result: AISummaryResult | AIActionsResult | AITitleResult;
+}
+
+export interface AIHistoryEntry {
+  id: number;
+  note_id: number;
+  type: string;
+  provider: string;
+  status: string;
+  result: Record<string, unknown> | null;
+  error_message: string | null;
+  created_at: string;
+}
