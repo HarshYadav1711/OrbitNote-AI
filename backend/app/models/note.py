@@ -12,9 +12,7 @@ class NoteTag(Base):
     note_id: Mapped[int] = mapped_column(
         ForeignKey("notes.id", ondelete="CASCADE"), primary_key=True
     )
-    tag_id: Mapped[int] = mapped_column(
-        ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True
-    )
+    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True)
 
 
 class Note(Base):
@@ -27,7 +25,9 @@ class Note(Base):
     category: Mapped[str | None] = mapped_column(String(80), nullable=True)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False)
-    share_token: Mapped[str | None] = mapped_column(String(64), unique=True, index=True, nullable=True)
+    share_token: Mapped[str | None] = mapped_column(
+        String(64), unique=True, index=True, nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow

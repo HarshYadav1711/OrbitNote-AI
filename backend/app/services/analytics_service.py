@@ -44,9 +44,7 @@ def get_dashboard(db: Session, user_id: int) -> dict:
         .all()
     )
 
-    ai_total = (
-        db.query(func.count(AIHistory.id)).filter(AIHistory.user_id == user_id).scalar() or 0
-    )
+    ai_total = db.query(func.count(AIHistory.id)).filter(AIHistory.user_id == user_id).scalar() or 0
     week_start = _week_start()
     ai_last_7 = (
         db.query(func.count(AIHistory.id))

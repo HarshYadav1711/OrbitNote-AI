@@ -91,7 +91,8 @@ Only include tasks explicitly stated or clearly implied. Max 12 items. No fluff.
             else:
                 text = str(entry.get("text", "")).strip()
             if text:
-                items.append(ActionItem(text=text[:200], done=bool(entry.get("done")) if isinstance(entry, dict) else False))
+                done = bool(entry.get("done")) if isinstance(entry, dict) else False
+                items.append(ActionItem(text=text[:200], done=done))
         return AIActionsResult(items=items[:12])
     except (json.JSONDecodeError, KeyError, TypeError):
         return None

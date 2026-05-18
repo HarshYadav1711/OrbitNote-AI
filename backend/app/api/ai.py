@@ -5,8 +5,8 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.models import User
 from app.schemas.ai import AIGenerateRequest, AIGenerateResponse, AIHistoryResponse
-from app.services.note_service import get_user_note
 from app.services.ai import service as ai_service
+from app.services.note_service import get_user_note
 
 router = APIRouter(prefix="/notes", tags=["ai"])
 

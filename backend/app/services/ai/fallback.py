@@ -7,7 +7,8 @@ _ACTION_PREFIXES = re.compile(
     re.IGNORECASE,
 )
 _ACTION_HINTS = re.compile(
-    r"\b(need to|should|must|will|plan to|remember to|follow up|schedule|send|call|email|review|finish|complete|prepare|update|create|fix|implement)\b",
+    r"\b(need to|should|must|will|plan to|remember to|follow up|schedule|send|call|"
+    r"email|review|finish|complete|prepare|update|create|fix|implement)\b",
     re.IGNORECASE,
 )
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")

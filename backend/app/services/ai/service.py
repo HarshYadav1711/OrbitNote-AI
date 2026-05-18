@@ -69,8 +69,13 @@ async def generate_summary(
     if result is None:
         result = fallback.generate_summary(content, title)
     entry = _record_history(
-        db, note=note, user_id=user_id, ai_type=AI_TYPE_SUMMARY,
-        provider=provider, status="success", result=result,
+        db,
+        note=note,
+        user_id=user_id,
+        ai_type=AI_TYPE_SUMMARY,
+        provider=provider,
+        status="success",
+        result=result,
     )
     return AIGenerateResponse(
         type=AI_TYPE_SUMMARY,
@@ -90,8 +95,13 @@ async def extract_actions(
     if result is None:
         result = fallback.extract_actions(content)
     entry = _record_history(
-        db, note=note, user_id=user_id, ai_type=AI_TYPE_ACTIONS,
-        provider=provider, status="success", result=result,
+        db,
+        note=note,
+        user_id=user_id,
+        ai_type=AI_TYPE_ACTIONS,
+        provider=provider,
+        status="success",
+        result=result,
     )
     return AIGenerateResponse(
         type=AI_TYPE_ACTIONS,
@@ -110,8 +120,13 @@ async def suggest_title(
     if result is None:
         result = fallback.suggest_title(content, title)
     entry = _record_history(
-        db, note=note, user_id=user_id, ai_type=AI_TYPE_TITLE,
-        provider=provider, status="success", result=result,
+        db,
+        note=note,
+        user_id=user_id,
+        ai_type=AI_TYPE_TITLE,
+        provider=provider,
+        status="success",
+        result=result,
     )
     return AIGenerateResponse(
         type=AI_TYPE_TITLE,

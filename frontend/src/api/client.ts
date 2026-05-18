@@ -18,7 +18,8 @@ function fetchWithTimeout(
 ): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
-  const { signal: _ignored, ...rest } = options;
+  const rest = { ...options };
+  delete rest.signal;
 
   return fetch(url, { ...rest, signal: controller.signal }).finally(() =>
     window.clearTimeout(timeoutId),
