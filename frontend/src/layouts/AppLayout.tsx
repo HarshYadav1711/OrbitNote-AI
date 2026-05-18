@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { ApiStatusBanner } from "../components/ApiStatusBanner";
 import { Button } from "../components/Button";
 import { useAuth } from "../hooks/useAuth";
 import { useUIStore } from "../store/uiStore";
@@ -23,6 +24,7 @@ export function AppLayout() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <ApiStatusBanner />
       <header className="shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-4 sm:gap-6">

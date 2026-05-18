@@ -1,7 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type NotePayload } from "../api/client";
 import type { Note } from "../types";
+
+function patchNoteInCaches(queryClient: QueryClient, updated: Note) {
+  queryClient.setQueryData(["note", updated.id], updated);
+  queryClient.setQueriesData<Note[]>({ queryKey: ["notes"] }, (prev) =>
+    prev?.map((n) => (n.id === updated.id ? updated : n)),
+  );
+}
+
+function draftFromNote(note: Note): NoteDraft {
+  return {
+    title: note.title,
+    content: note.content,
+    category: note.category ?? "",
+    tags: tagsToInput(note.tags),
+  };
+}
 
 export type SaveStatus = "idle" | "unsaved" | "saving" | "saved" | "error";
 
@@ -70,11 +86,11 @@ export function useNoteEditor(noteId: number | null) {
 
   useEffect(() => {
     if (!noteQuery.data) return;
-    setDraft({
-      title: noteQuery.data.title,
-      content: noteQuery.data.content,
-      category: noteQuery.data.category ?? "",
-      tags: tagsToInput(noteQuery.data.tags),
+    setDraft((current) => {
+      if (current && isDraftDirty(current, noteQuery.data)) {
+        return current;
+      }
+      return draftFromNote(noteQuery.data);
     });
     setSaveStatus("saved");
     skipSaveRef.current = true;
@@ -89,11 +105,8 @@ export function useNoteEditor(noteId: number | null) {
     },
     onSuccess: (updated) => {
       if (activeNoteIdRef.current !== updated.id) return;
-      queryClient.setQueryData(["note", updated.id], updated);
-      queryClient.setQueryData<Note[]>(["notes"], (prev) =>
-        prev?.map((n) => (n.id === updated.id ? updated : n)),
-      );
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      patchNoteInCaches(queryClient, updated);
+      setDraft(draftFromNote(updated));
       setSaveStatus("saved");
       skipSaveRef.current = true;
     },
@@ -140,8 +153,7 @@ export function useNoteEditor(noteId: number | null) {
         { id: noteId, body: { is_archived: archived } },
         {
           onSuccess: (updated) => {
-            queryClient.invalidateQueries({ queryKey: ["notes"] });
-            queryClient.setQueryData(["note", updated.id], updated);
+            patchNoteInCaches(queryClient, updated);
           },
         },
       );

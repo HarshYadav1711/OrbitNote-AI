@@ -48,14 +48,22 @@ export function LandingPage() {
             a productivity dashboard—without locking you into a cloud stack on day one.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/signup">
-              <Button className="px-5 py-2.5">Create account</Button>
-            </Link>
-            <Link to="/login">
-              <Button variant="secondary" className="px-5 py-2.5">
-                Sign in
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/app">
+                <Button className="px-5 py-2.5">Open workspace</Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/signup">
+                  <Button className="px-5 py-2.5">Create account</Button>
+                </Link>
+                <Link to="/login">
+                  <Button variant="secondary" className="px-5 py-2.5">
+                    Sign in
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
 

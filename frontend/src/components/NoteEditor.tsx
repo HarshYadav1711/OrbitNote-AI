@@ -18,6 +18,8 @@ type Props = {
   isLoading: boolean;
   isError: boolean;
   onArchive: (archived: boolean) => void;
+  onDelete: () => void;
+  isDeleting: boolean;
   onCreateNote: () => void;
   isCreating: boolean;
   onSaveNow: () => void;
@@ -32,6 +34,8 @@ export function NoteEditor({
   isLoading,
   isError,
   onArchive,
+  onDelete,
+  isDeleting,
   onCreateNote,
   isCreating,
   onSaveNow,
@@ -132,6 +136,14 @@ export function NoteEditor({
                 Archive
               </Button>
             )}
+            <Button
+              variant="danger"
+              className="text-xs"
+              onClick={onDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting…" : "Delete"}
+            </Button>
           </div>
         </div>
 
@@ -140,7 +152,8 @@ export function NoteEditor({
             type="text"
             value={draft.title}
             onChange={(e) => onDraftChange({ title: e.target.value })}
-            placeholder="Title"
+            placeholder="Add a title…"
+            aria-label="Note title"
             className="w-full border-0 bg-transparent text-2xl font-semibold outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600"
           />
 

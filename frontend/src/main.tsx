@@ -6,7 +6,14 @@ import App from "./App";
 import "./index.css";
 import { useUIStore } from "./store/uiStore";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function Bootstrap() {
   const darkMode = useUIStore((s) => s.darkMode);

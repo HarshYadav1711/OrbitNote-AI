@@ -89,6 +89,37 @@ export function WorkspacePage() {
     }
   };
 
+  const listQueryKey = ["notes", filters.archived, debouncedSearch, filters.tag, filters.category] as const;
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.deleteNote(id),
+    onSuccess: (_data, deletedId) => {
+      queryClient.removeQueries({ queryKey: ["note", deletedId] });
+      queryClient.setQueryData<Note[]>(listQueryKey, (prev) =>
+        prev?.filter((n) => n.id !== deletedId),
+      );
+      queryClient.setQueryData<Note[]>(["notes", "facets"], (prev) =>
+        prev?.filter((n) => n.id !== deletedId),
+      );
+      queryClient.invalidateQueries({ queryKey: ["notes"], refetchType: "none" });
+      const remaining = queryClient.getQueryData<Note[]>(listQueryKey) ?? [];
+      navigate(remaining.length > 0 ? `/app/${remaining[0].id}` : "/app");
+    },
+  });
+
+  const handleDelete = () => {
+    if (noteId == null || !editor.note) return;
+    const label = editor.note.title.trim() || "Untitled";
+    if (
+      !window.confirm(
+        `Delete "${label}" permanently? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    deleteMutation.mutate(noteId);
+  };
+
   const notes = notesQuery.data ?? [];
 
   useEffect(() => {
@@ -174,6 +205,8 @@ export function WorkspacePage() {
             isLoading={noteId != null && editor.isLoading}
             isError={noteId != null && editor.isError}
             onArchive={handleArchive}
+            onDelete={handleDelete}
+            isDeleting={deleteMutation.isPending}
             onCreateNote={handleCreateNote}
             isCreating={createMutation.isPending}
             onSaveNow={() => editor.saveNow()}

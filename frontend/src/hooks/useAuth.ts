@@ -9,6 +9,9 @@ export function useAuth() {
     queryKey: ["me"],
     queryFn: api.me,
     retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: 60_000,
   });
 
   const loginMutation = useMutation({
@@ -23,15 +26,20 @@ export function useAuth() {
 
   const logoutMutation = useMutation({
     mutationFn: api.logout,
-    onSuccess: async () => {
-      queryClient.clear();
+    onSuccess: () => {
+      queryClient.setQueryData(["me"], null);
     },
   });
 
   return {
-    user: meQuery.data,
-    isLoading: meQuery.isLoading,
+    user: meQuery.data ?? undefined,
+    isLoading: meQuery.isPending,
     isAuthenticated: Boolean(meQuery.data),
+    sessionError: meQuery.isError
+      ? meQuery.error instanceof Error
+        ? meQuery.error.message
+        : "Could not verify session"
+      : null,
     loginMutation,
     signupMutation,
     logoutMutation,

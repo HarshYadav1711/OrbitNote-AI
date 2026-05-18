@@ -9,6 +9,22 @@ import type {
 } from "../types";
 
 const API_BASE = "/api";
+const DEFAULT_TIMEOUT_MS = 10_000;
+const AI_TIMEOUT_MS = 90_000;
+
+function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+  const { signal: _ignored, ...rest } = options;
+
+  return fetch(url, { ...rest, signal: controller.signal }).finally(() =>
+    window.clearTimeout(timeoutId),
+  );
+}
 
 export type NotesQueryParams = {
   q?: string;
@@ -35,15 +51,32 @@ async function request<T>(
   path: string,
   options: RequestInit = {},
   auth = true,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    credentials: auth ? "include" : "omit",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers ?? {}),
-    },
-    ...options,
-  });
+  let res: Response;
+  try {
+    res = await fetchWithTimeout(
+      `${API_BASE}${path}`,
+      {
+        credentials: auth ? "include" : "omit",
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers ?? {}),
+        },
+        ...options,
+      },
+      timeoutMs,
+    );
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error(
+        timeoutMs > DEFAULT_TIMEOUT_MS
+          ? "AI request timed out. Ollama may be slow — try again in a moment."
+          : "Could not reach the API. Is the backend running on port 8000?",
+      );
+    }
+    throw new Error("Could not reach the API. Is the backend running on port 8000?");
+  }
 
   if (!res.ok) {
     let detail = "Request failed";
@@ -80,7 +113,30 @@ export const api = {
   login: (body: { email: string; password: string }) =>
     request<User>("/auth/login", { method: "POST", body: JSON.stringify(body) }),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
-  me: () => request<User>("/auth/me"),
+  /** Returns null when not logged in (401). Avoids treating guests as a query error. */
+  me: async (): Promise<User | null> => {
+    let res: Response;
+    try {
+      res = await fetchWithTimeout(`${API_BASE}/auth/me`, {
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch {
+      throw new Error("Could not reach the API. Is the backend running on port 8000?");
+    }
+    if (res.status === 401) return null;
+    if (!res.ok) {
+      let detail = "Request failed";
+      try {
+        const body = await res.json();
+        detail = body.detail ?? detail;
+      } catch {
+        /* ignore */
+      }
+      throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+    }
+    return res.json() as Promise<User>;
+  },
   notes: (params?: NotesQueryParams) =>
     request<Note[]>(`/notes${notesQueryString(params)}`),
   getNote: (id: number) => request<Note>(`/notes/${id}`),
@@ -92,21 +148,28 @@ export const api = {
   }) => request<Note>("/notes", { method: "POST", body: JSON.stringify(body) }),
   updateNote: (id: number, body: NotePayload) =>
     request<Note>(`/notes/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  deleteNote: (id: number) => request<void>(`/notes/${id}`, { method: "DELETE" }),
   generateSummary: (id: number, body?: AIGeneratePayload) =>
-    request<AIGenerateResponse>(`/notes/${id}/ai/summary`, {
-      method: "POST",
-      body: JSON.stringify(body ?? {}),
-    }),
+    request<AIGenerateResponse>(
+      `/notes/${id}/ai/summary`,
+      { method: "POST", body: JSON.stringify(body ?? {}) },
+      true,
+      AI_TIMEOUT_MS,
+    ),
   extractActions: (id: number, body?: AIGeneratePayload) =>
-    request<AIGenerateResponse>(`/notes/${id}/ai/actions`, {
-      method: "POST",
-      body: JSON.stringify(body ?? {}),
-    }),
+    request<AIGenerateResponse>(
+      `/notes/${id}/ai/actions`,
+      { method: "POST", body: JSON.stringify(body ?? {}) },
+      true,
+      AI_TIMEOUT_MS,
+    ),
   suggestTitle: (id: number, body?: AIGeneratePayload) =>
-    request<AIGenerateResponse>(`/notes/${id}/ai/title`, {
-      method: "POST",
-      body: JSON.stringify(body ?? {}),
-    }),
+    request<AIGenerateResponse>(
+      `/notes/${id}/ai/title`,
+      { method: "POST", body: JSON.stringify(body ?? {}) },
+      true,
+      AI_TIMEOUT_MS,
+    ),
   aiHistory: (id: number) => request<AIHistoryEntry[]>(`/notes/${id}/ai/history`),
   enableShare: (id: number) =>
     request<ShareLink>(`/notes/${id}/share`, { method: "POST" }),

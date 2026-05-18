@@ -76,7 +76,7 @@ def update_note(
     if not note:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
     if payload.title is not None:
-        note.title = payload.title.strip() or "Untitled"
+        note.title = payload.title.strip()
     if payload.content is not None:
         note.content = payload.content
     if payload.category is not None:
@@ -89,6 +89,19 @@ def update_note(
     db.commit()
     db.refresh(note)
     return _serialize(note)
+
+
+@router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_note(
+    note_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    note = get_user_note(db, user.id, note_id)
+    if not note:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
+    db.delete(note)
+    db.commit()
 
 
 def _share_url(token: str | None) -> str | None:

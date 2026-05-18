@@ -31,3 +31,12 @@ def test_notes_crud_and_filters(client):
     archived = client.patch(f"/notes/{note_id}", json={"is_archived": True})
     assert archived.status_code == 200
     assert archived.json()["is_archived"] is True
+
+    restored = client.patch(f"/notes/{note_id}", json={"is_archived": False})
+    assert restored.status_code == 200
+
+    deleted = client.delete(f"/notes/{note_id}")
+    assert deleted.status_code == 204
+
+    missing = client.get(f"/notes/{note_id}")
+    assert missing.status_code == 404

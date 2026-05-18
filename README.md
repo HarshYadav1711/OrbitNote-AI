@@ -84,20 +84,29 @@ cp .env.example .env
 
 ### 2. Install and run (recommended)
 
-```bash
+From the **repository root** (`OrbitNote AI/`):
+
+```powershell
+# Root dependencies (runs backend + frontend together)
 npm install
-cd frontend && npm install && cd ..
-cd backend && python -m venv .venv && cd ..
 
-# Windows
-backend\.venv\Scripts\activate
-# macOS/Linux
-source backend/.venv/bin/activate
-
-pip install -r backend/requirements.txt
+# Frontend
+cd frontend
+npm install
 cd ..
+
+# Backend virtualenv + packages
+cd backend
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+cd ..
+
+# Start both servers
 npm run dev
 ```
+
+> **Path tip:** If your terminal is already inside `backend/`, use `requirements.txt` (not `backend\requirements.txt`).  
+> Paths with spaces (e.g. `OrbitNote AI`) must be quoted in PowerShell: `& "D:\Fun\OrbitNote AI\backend\.venv\Scripts\python.exe"`.
 
 Open [http://localhost:5173](http://localhost:5173). The Vite dev server proxies `/api` to `http://localhost:8000`.
 
@@ -119,8 +128,11 @@ DATABASE_URL=postgresql://orbitnote:orbitnote@localhost:5432/orbitnote
 
 ```bash
 ollama pull llama3.2
-ollama serve
 ```
+
+On Windows, Ollama usually runs in the background after install (system tray). **Do not run `ollama serve` if you see** `bind: Only one usage of each socket address` — that means it is already listening on port `11434`.
+
+Check: `ollama list` should show `llama3.2` (matches `OLLAMA_MODEL` in `.env`).
 
 If Ollama is not running, Assist still works via the built-in fallback.
 
@@ -215,7 +227,7 @@ In the workspace (intentionally minimal):
 | `POST` | `/auth/signup`, `/login`, `/logout` | No |
 | `GET` | `/auth/me` | Cookie |
 | `GET/POST` | `/notes` | Cookie |
-| `GET/PATCH` | `/notes/{id}` | Cookie |
+| `GET/PATCH/DELETE` | `/notes/{id}` | Cookie |
 | `POST/DELETE` | `/notes/{id}/share` | Cookie |
 | `POST` | `/notes/{id}/ai/summary`, `/actions`, `/title` | Cookie |
 | `GET` | `/notes/{id}/ai/history` | Cookie |
