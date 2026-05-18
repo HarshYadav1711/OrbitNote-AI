@@ -66,6 +66,15 @@ export function DashboardPage() {
       <EmptyState
         title="Could not load dashboard"
         description="Make sure the API is running, then refresh."
+        action={
+          <button
+            type="button"
+            onClick={() => dashboardQuery.refetch()}
+            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+          >
+            Retry
+          </button>
+        }
       />
     );
   }

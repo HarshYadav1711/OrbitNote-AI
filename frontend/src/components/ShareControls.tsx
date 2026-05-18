@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { Button } from "./Button";
 import type { Note } from "../types";
@@ -12,14 +12,24 @@ export function ShareControls({ note }: Props) {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
 
-  const shareUrl =
+  useEffect(() => {
+    setShareUrl(
+      note.is_public && note.share_token
+        ? `${window.location.origin}/share/${note.share_token}`
+        : null,
+    );
+  }, [note.is_public, note.share_token]);
+
+  const [shareUrl, setShareUrl] = useState<string | null>(
     note.is_public && note.share_token
       ? `${window.location.origin}/share/${note.share_token}`
-      : null;
+      : null,
+  );
 
   const enableMutation = useMutation({
     mutationFn: () => api.enableShare(note.id),
-    onSuccess: () => {
+    onSuccess: (link) => {
+      setShareUrl(link.share_url);
       queryClient.invalidateQueries({ queryKey: ["note", note.id] });
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
@@ -28,6 +38,7 @@ export function ShareControls({ note }: Props) {
   const disableMutation = useMutation({
     mutationFn: () => api.disableShare(note.id),
     onSuccess: () => {
+      setShareUrl(null);
       queryClient.invalidateQueries({ queryKey: ["note", note.id] });
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
@@ -41,6 +52,10 @@ export function ShareControls({ note }: Props) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const archivedHint = note.is_archived
+    ? "Archived notes cannot be shared until restored."
+    : null;
 
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-900/50">
@@ -65,10 +80,18 @@ export function ShareControls({ note }: Props) {
           : "Create a secure link to share a read-only copy of this note."}
       </p>
 
+      {archivedHint ? <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{archivedHint}</p> : null}
+
       <div className="mt-3 flex flex-wrap gap-2">
         {note.is_public ? (
           <>
-            <Button variant="secondary" className="text-xs" onClick={handleCopy} disabled={!shareUrl}>
+            <Button
+              variant="secondary"
+              className="text-xs"
+              onClick={handleCopy}
+              disabled={!shareUrl}
+              aria-live="polite"
+            >
               {copied ? "Copied!" : "Copy link"}
             </Button>
             <Button

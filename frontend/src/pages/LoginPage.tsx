@@ -27,21 +27,33 @@ export function LoginPage() {
       <h1 className="text-2xl font-bold">Welcome back</h1>
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Sign in to your workspace.</p>
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-        <Input
-          placeholder="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Input
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-slate-500">Email</span>
+          <Input
+            placeholder="you@example.com"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-slate-500">Password</span>
+          <Input
+            placeholder="Your password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </label>
+        {error ? (
+          <p className="text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        ) : null}
         <Button className="w-full" type="submit" disabled={loginMutation.isPending}>
           {loginMutation.isPending ? "Signing in..." : "Sign in"}
         </Button>

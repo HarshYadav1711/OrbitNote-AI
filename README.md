@@ -1,81 +1,109 @@
 # OrbitNote
 
-Monorepo foundation for a notes workspace: authentication, core data models, and a minimal app shell.
+A focused notes workspace: write and organize notes, get optional AI help, share read-only links, and see lightweight productivity insights. Built as a small full-stack product you can run locally without paid services.
+
+![Stack](https://img.shields.io/badge/React-18-61dafb) ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688) ![SQLite](https://img.shields.io/badge/SQLite-default-003B57)
+
+## Product overview
+
+OrbitNote is for people who want a **fast editor**, **simple organization** (categories and tags), and **occasional AI assistance** without adopting a heavy suite. Core flows:
+
+- **Workspace** — sidebar list with search/filters; editor with autosave
+- **Assist** — summaries, action items, and title suggestions (Ollama when available, deterministic fallback otherwise)
+- **Sharing** — secure public read-only links (`/share/:token`)
+- **Dashboard** — note counts, weekly activity, tag trends, AI usage
+
+Authentication uses **httpOnly JWT cookies**; protected routes require a valid session.
+
+## Architecture
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  React SPA (Vite, TanStack Query, React Router, Tailwind)   │
+│  /app workspace · /app/dashboard · /share/:token public     │
+└───────────────────────────┬─────────────────────────────────┘
+                            │ /api (proxy in dev)
+┌───────────────────────────▼─────────────────────────────────┐
+│  FastAPI                                                     │
+│  auth · notes · ai · public · analytics                      │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+┌───────────────────────────▼─────────────────────────────────┐
+│  SQLAlchemy + Alembic  →  SQLite (dev) or PostgreSQL       │
+└─────────────────────────────────────────────────────────────┘
+         Optional: Ollama HTTP API for AI generation
+```
+
+| Layer | Responsibility |
+| ----- | -------------- |
+| `frontend/src/api/client.ts` | Typed fetch wrapper, cookie credentials |
+| `backend/app/api/*` | HTTP routers |
+| `backend/app/services/*` | Business logic (notes, share, AI, analytics) |
+| `backend/app/models/*` | ORM entities |
+| `backend/alembic/versions/*` | Schema migrations |
+
+## Stack
+
+| Area | Technology |
+| ---- | ---------- |
+| Frontend | React 18, TypeScript, Vite 6, TanStack Query, Zustand, Tailwind CSS |
+| Backend | FastAPI, Pydantic v2, SQLAlchemy 2, Alembic |
+| Auth | bcrypt, JWT in httpOnly cookies |
+| AI | Ollama (`/api/generate`) with JSON output; rule-based fallback |
+| Database | SQLite by default; PostgreSQL via Docker Compose |
+| CI | GitHub Actions (pytest, Ruff, ESLint, production build) |
 
 ## Repository layout
 
 ```text
 orbitnote/
-├── backend/          FastAPI + SQLAlchemy + Alembic
-├── frontend/         React + TypeScript + Vite + Tailwind
-├── .env.example      Environment template (copy to .env)
-├── docker-compose.yml  Optional PostgreSQL for local dev
-└── package.json      Root scripts (dev, lint, test)
+├── backend/           FastAPI application
+├── frontend/          React SPA
+├── samples/           Example API/AI JSON, SQL schema, screenshot placeholders
+├── demo/              Demo video guidance
+├── .env.example       Environment template
+├── DEPLOYMENT.md      Production deployment notes
+└── package.json       Root scripts (dev, lint, test)
 ```
 
-## Stack
+## Setup
 
-| Layer    | Choices                                      |
-| -------- | -------------------------------------------- |
-| Frontend | React 18, TypeScript, Vite, TanStack Query   |
-| Backend  | FastAPI, Pydantic v2, SQLAlchemy 2           |
-| Database | SQLite by default; PostgreSQL optional       |
-| Auth     | JWT in httpOnly cookies, bcrypt passwords    |
+### Prerequisites
 
-## Prerequisites
+- **Node.js 20+**
+- **Python 3.11+**
+- Docker is optional (PostgreSQL only)
 
-- Node.js 20+
-- Python 3.11+
-
-Docker is **optional** (only if you prefer PostgreSQL over SQLite).
-
-## Quick start
-
-### 1. Environment
+### 1. Clone and configure
 
 ```bash
+git clone <repo-url> orbitnote && cd orbitnote
 cp .env.example .env
 # Edit JWT_SECRET to a long random string
 ```
 
-### 2. Backend
+### 2. Install and run (recommended)
 
 ```bash
-cd backend
-python -m venv .venv
+npm install
+cd frontend && npm install && cd ..
+cd backend && python -m venv .venv && cd ..
+
 # Windows
-.venv\Scripts\activate
+backend\.venv\Scripts\activate
 # macOS/Linux
-source .venv/bin/activate
+source backend/.venv/bin/activate
 
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-```
-
-Migrations run automatically on API startup. To run them manually:
-
-```bash
-npm run db:migrate
-```
-
-### 3. Frontend
-
-```bash
-cd frontend
-npm install
+pip install -r backend/requirements.txt
+cd ..
 npm run dev
 ```
 
-### 4. Run both (from repo root)
+Open [http://localhost:5173](http://localhost:5173). The Vite dev server proxies `/api` to `http://localhost:8000`.
 
-```bash
-npm install
-npm run dev
-```
+Migrations run automatically on API startup. Manual run: `npm run db:migrate`.
 
-Open [http://localhost:5173](http://localhost:5173).
-
-## Optional PostgreSQL
+### Optional: PostgreSQL
 
 ```bash
 docker compose up -d
@@ -87,31 +115,123 @@ Set in `.env`:
 DATABASE_URL=postgresql://orbitnote:orbitnote@localhost:5432/orbitnote
 ```
 
-## Scripts
+### Optional: Ollama (AI)
 
-| Command              | Description                    |
-| -------------------- | ------------------------------ |
-| `npm run dev`        | Backend + frontend together    |
-| `npm run lint`       | Ruff + ESLint + TypeScript     |
-| `npm run format`     | Ruff + Prettier                |
-| `npm test`           | Backend pytest suite           |
-| `npm run db:migrate` | Alembic upgrade head           |
+```bash
+ollama pull llama3.2
+ollama serve
+```
 
-## API surface (foundation)
+If Ollama is not running, Assist still works via the built-in fallback.
 
-- `GET /health` — liveness
-- `POST /auth/signup`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`
-- `GET /notes`, `POST /notes`, `GET /notes/{id}`, `PATCH /notes/{id}`
+## Environment variables
 
-## Data model
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `DATABASE_URL` | `sqlite:///./data/orbitnote.db` | SQLAlchemy URL |
+| `JWT_SECRET` | *(dev placeholder)* | **Required** in production |
+| `JWT_EXPIRE_MINUTES` | `10080` | Token lifetime |
+| `CORS_ORIGINS` | `http://localhost:5173` | Allowed browser origins |
+| `FRONTEND_ORIGIN` | `http://localhost:5173` | Base URL for share links |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server |
+| `OLLAMA_MODEL` | `llama3.2` | Model name |
+| `DISABLE_MIGRATIONS` | — | Set `1` in tests |
 
-- **users** — account identity
-- **notes** — title, content, category, archive flag
-- **tags** / **note_tags** — many-to-many tagging
+See `.env.example` for the full list.
 
-## What is intentionally out of scope
+## Testing
 
-This scaffold does **not** include AI features, public sharing, dashboards, or real-time collaboration. Those belong in later feature branches.
+```bash
+# Backend (20 tests — auth, notes, AI, share, analytics, edge cases)
+npm test
+
+# Lint
+npm run lint
+
+# Frontend production build
+cd frontend && npm run build
+```
+
+Tests use in-memory SQLite with `DISABLE_MIGRATIONS=1`. CI runs the same suite on push.
+
+## AI workflow
+
+1. User triggers **summary**, **actions**, or **title** from the Assist panel (or API).
+2. `ai/service.py` loads note content (or optional draft from request body).
+3. **Ollama path:** health check → `POST /api/generate` with `format: "json"` → parse structured result.
+4. **Fallback path:** heuristic summary, regex action extraction, first-line title (`ai/fallback.py`).
+5. Result stored in `ai_history` with `provider`, `status`, and `result_json`.
+6. Response returned to the client with `history_id` for audit.
+
+Example payloads: `samples/ai-outputs.json` and `samples/api-responses.json`.
+
+## Database model
+
+```text
+users ──< notes ──< ai_history
+          │
+          └── note_tags >── tags
+```
+
+| Table | Purpose |
+| ----- | ------- |
+| `users` | Account (email unique, bcrypt hash) |
+| `notes` | Title, content, category, archive, `is_public`, `share_token` |
+| `tags` / `note_tags` | Many-to-many; tag names normalized to lowercase |
+| `ai_history` | Per-request AI audit trail |
+
+Reference SQL: `samples/schema.sql`. Migrations: `backend/alembic/versions/`.
+
+## Public sharing flow
+
+1. Owner calls `POST /notes/{id}/share` → sets `is_public=true`, generates `share_token`, returns `share_url`.
+2. Visitors open `GET /public/notes/{token}` (no auth) → read-only title, content, category, tags.
+3. `DELETE /notes/{id}/share` clears the token; old links return 404.
+4. Archived notes are hidden from the public endpoint even if flags remain set.
+
+Frontend route: `/share/:token` → `PublicNotePage`.
+
+## Keyboard shortcuts
+
+In the workspace (intentionally minimal):
+
+| Shortcut | Action |
+| -------- | ------ |
+| `Ctrl/Cmd + S` | Save now |
+| `Ctrl/Cmd + N` | New note |
+
+## UX details
+
+- **Loading / empty / error** states on workspace, editor, dashboard, and public pages
+- **Dark mode** with system preference + persisted toggle (localStorage)
+- **Mobile:** slide-out note list, bottom nav for Notes/Dashboard
+- **Accessibility:** form labels, `aria-live` on save status and copy feedback, screen-reader labels on search
+
+## API reference (summary)
+
+| Method | Path | Auth |
+| ------ | ---- | ---- |
+| `GET` | `/health` | No |
+| `POST` | `/auth/signup`, `/login`, `/logout` | No |
+| `GET` | `/auth/me` | Cookie |
+| `GET/POST` | `/notes` | Cookie |
+| `GET/PATCH` | `/notes/{id}` | Cookie |
+| `POST/DELETE` | `/notes/{id}/share` | Cookie |
+| `POST` | `/notes/{id}/ai/summary`, `/actions`, `/title` | Cookie |
+| `GET` | `/notes/{id}/ai/history` | Cookie |
+| `GET` | `/public/notes/{token}` | No |
+| `GET` | `/analytics/dashboard` | Cookie |
+
+Interactive docs: `http://localhost:8000/docs` when the API is running.
+
+## Future improvements
+
+- Note deletion and version history
+- Per-user tag namespaces (tags are currently global by name)
+- Rate limiting on public and AI endpoints
+- Bearer token auth for API clients
+- Real-time collaboration
+- Export (Markdown/PDF)
 
 ## License
 

@@ -1,37 +1,5 @@
 # OrbitNote AI — Deployment & DevOps
 
-## Recommended Hosting
+> **Canonical guide:** see [`DEPLOYMENT.md`](DEPLOYMENT.md) at the repository root for up-to-date hosting, environment variables, and security checklist.
 
-### Frontend
-- Vercel
-
-### Backend
-- Railway or Render
-
-### Database
-- Supabase PostgreSQL
-
----
-
-## CI/CD
-
-GitHub Actions should:
-- Run linting
-- Run tests
-- Validate builds
-
----
-
-## Environment Variables
-
-DATABASE_URL=
-JWT_SECRET=
-GEMINI_API_KEY=
-
----
-
-## Security Checklist
-- No secrets committed
-- Environment isolation
-- Protected APIs
-- Input validation
+This document is retained as a planning reference. The implemented stack uses **Ollama** (optional) for AI, not Gemini.

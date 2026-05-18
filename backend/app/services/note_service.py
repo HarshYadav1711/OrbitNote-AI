@@ -16,10 +16,6 @@ def sync_tags(db: Session, note: Note, tag_names: list[str]) -> None:
         note.tags.append(tag)
 
 
-def note_to_dict_tags(note: Note) -> list:
-    return note.tags
-
-
 def get_user_note(db: Session, user_id: int, note_id: int) -> Note | None:
     return (
         db.query(Note)

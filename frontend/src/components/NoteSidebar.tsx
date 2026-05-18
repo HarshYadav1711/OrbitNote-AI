@@ -19,6 +19,7 @@ type Props = {
   isCreating: boolean;
   categories: string[];
   tags: string[];
+  className?: string;
 };
 
 function formatRelative(dateStr: string): string {
@@ -46,12 +47,19 @@ export function NoteSidebar({
   isCreating,
   categories,
   tags,
+  className = "",
 }: Props) {
   return (
-    <aside className="flex h-full w-72 shrink-0 flex-col border-r border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/50">
+    <aside
+      className={`flex h-full w-72 shrink-0 flex-col border-r border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/50 ${className}`}
+    >
       <div className="border-b border-slate-200 p-3 dark:border-slate-800">
         <div className="flex items-center gap-2">
+          <label className="sr-only" htmlFor="note-search">
+            Search notes
+          </label>
           <input
+            id="note-search"
             type="search"
             placeholder="Search notes…"
             value={filters.search}
@@ -62,7 +70,8 @@ export function NoteSidebar({
             type="button"
             onClick={onCreateNote}
             disabled={isCreating}
-            title="New note"
+            aria-label="New note"
+            title="New note (Ctrl+N)"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-lg font-medium text-white transition hover:bg-brand-700 disabled:opacity-50"
           >
             +

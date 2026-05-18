@@ -30,23 +30,44 @@ export function SignupPage() {
         Start with a local workspace—no credit card required.
       </p>
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-        <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-        <Input
-          placeholder="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Input
-          placeholder="Password (min 8 chars)"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={8}
-        />
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-slate-500">Name</span>
+          <Input
+            placeholder="Your name"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-slate-500">Email</span>
+          <Input
+            placeholder="you@example.com"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-slate-500">Password</span>
+          <Input
+            placeholder="At least 8 characters"
+            type="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+          />
+        </label>
+        {error ? (
+          <p className="text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        ) : null}
         <Button className="w-full" type="submit" disabled={signupMutation.isPending}>
           {signupMutation.isPending ? "Creating..." : "Create account"}
         </Button>

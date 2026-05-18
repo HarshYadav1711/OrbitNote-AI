@@ -1,0 +1,54 @@
+{
+  "description": "Example AI responses from POST /notes/{id}/ai/* endpoints. Provider is 'ollama' when a local Ollama server is reachable, otherwise 'fallback' (deterministic rules).",
+  "summary_fallback": {
+    "type": "summary",
+    "provider": "fallback",
+    "status": "success",
+    "result": {
+      "summary": "We need to ship the MVP by Friday.",
+      "bullets": [
+        "Write API tests",
+        "Update documentation"
+      ]
+    }
+  },
+  "summary_ollama": {
+    "type": "summary",
+    "provider": "ollama",
+    "status": "success",
+    "result": {
+      "summary": "The team plans a phased MVP release by Friday, with testing and documentation as immediate follow-ups.",
+      "bullets": [
+        "MVP target: Friday",
+        "Open tasks: API tests and docs",
+        "Rollout strategy: phased"
+      ]
+    }
+  },
+  "actions": {
+    "type": "actions",
+    "provider": "fallback",
+    "status": "success",
+    "result": {
+      "items": [
+        { "text": "call the client", "done": false },
+        { "text": "review the design before launch", "done": false }
+      ]
+    }
+  },
+  "title": {
+    "type": "title",
+    "provider": "fallback",
+    "status": "success",
+    "result": {
+      "title": "Quarterly planning session outcomes"
+    }
+  },
+  "draft_override": {
+    "note": "POST body may include unsaved content/title; AI uses draft text without persisting the note first.",
+    "request": {
+      "content": "Launch checklist for OrbitNote beta",
+      "title": "Untitled"
+    }
+  }
+}

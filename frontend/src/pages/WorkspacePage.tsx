@@ -8,6 +8,7 @@ import { EmptyState } from "../components/EmptyState";
 import { Button } from "../components/Button";
 import { useDebounce } from "../hooks/useDebounce";
 import { useNoteEditor } from "../hooks/useNoteEditor";
+import { useWorkspaceShortcuts } from "../hooks/useWorkspaceShortcuts";
 import type { Note } from "../types";
 
 function collectFacets(notes: Note[]) {
@@ -36,6 +37,7 @@ export function WorkspacePage() {
     category: "",
     archived: false,
   });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const debouncedSearch = useDebounce(filters.search, 200);
 
@@ -72,7 +74,10 @@ export function WorkspacePage() {
     },
   });
 
-  const handleSelectNote = (id: number) => navigate(`/app/${id}`);
+  const handleSelectNote = (id: number) => {
+    navigate(`/app/${id}`);
+    setSidebarOpen(false);
+  };
 
   const handleCreateNote = () => createMutation.mutate();
 
@@ -95,8 +100,22 @@ export function WorkspacePage() {
   const showWorkspaceEmpty =
     !notesQuery.isLoading && !notesQuery.isError && notes.length === 0 && !filters.archived;
 
+  useWorkspaceShortcuts({
+    onSave: () => editor.saveNow(),
+    onNewNote: handleCreateNote,
+    enabled: !createMutation.isPending,
+  });
+
   return (
     <div className="-mx-4 -my-6 flex h-[calc(100vh-3.5rem)] overflow-hidden">
+      {sidebarOpen ? (
+        <button
+          type="button"
+          aria-label="Close note list"
+          className="fixed inset-0 z-20 bg-black/40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      ) : null}
       <NoteSidebar
         notes={notes}
         activeNoteId={noteId}
@@ -108,14 +127,29 @@ export function WorkspacePage() {
         isCreating={createMutation.isPending}
         categories={categories}
         tags={tags}
+        className={`fixed inset-y-0 left-0 z-30 w-72 transform transition-transform lg:relative lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       />
 
       <section className="flex min-w-0 flex-1 flex-col bg-white dark:bg-slate-950">
+        <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2 lg:hidden dark:border-slate-800">
+          <Button variant="secondary" className="text-xs" onClick={() => setSidebarOpen(true)}>
+            Notes
+          </Button>
+          <span className="text-xs text-slate-400">Ctrl+N new · Ctrl+S save</span>
+        </div>
+
         {notesQuery.isError ? (
           <div className="flex flex-1 items-center justify-center p-8">
             <EmptyState
               title="Could not load notes"
               description="Make sure the API is running, then refresh."
+              action={
+                <Button variant="secondary" onClick={() => notesQuery.refetch()}>
+                  Retry
+                </Button>
+              }
             />
           </div>
         ) : showWorkspaceEmpty ? (
@@ -142,6 +176,7 @@ export function WorkspacePage() {
             onArchive={handleArchive}
             onCreateNote={handleCreateNote}
             isCreating={createMutation.isPending}
+            onSaveNow={() => editor.saveNow()}
           />
         )}
       </section>

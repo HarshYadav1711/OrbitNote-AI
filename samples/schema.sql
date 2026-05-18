@@ -1,4 +1,5 @@
 -- OrbitNote AI core schema (PostgreSQL)
+-- Matches Alembic migrations 001–003
 
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
@@ -35,7 +36,13 @@ CREATE TABLE note_tags (
 CREATE TABLE ai_history (
   id SERIAL PRIMARY KEY,
   note_id INT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   type VARCHAR(40) NOT NULL,
-  response TEXT NOT NULL,
+  provider VARCHAR(40) NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  result_json TEXT,
+  error_message TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE INDEX ix_ai_history_note_id ON ai_history (note_id);

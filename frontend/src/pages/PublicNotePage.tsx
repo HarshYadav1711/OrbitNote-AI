@@ -73,12 +73,10 @@ export function PublicNotePage() {
               })}
             </p>
 
-            <div className="prose prose-slate mt-8 max-w-none dark:prose-invert">
-              <div className="whitespace-pre-wrap text-base leading-relaxed text-slate-800 dark:text-slate-200">
-                {note.content.trim() || (
-                  <span className="text-slate-400">This note has no content.</span>
-                )}
-              </div>
+            <div className="mt-8 whitespace-pre-wrap text-base leading-relaxed text-slate-800 dark:text-slate-200">
+              {note.content.trim() || (
+                <span className="text-slate-400">This note has no content.</span>
+              )}
             </div>
           </article>
         )}

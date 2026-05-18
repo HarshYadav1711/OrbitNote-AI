@@ -1,6 +1,10 @@
+import { Button } from "./Button";
 import type { SaveStatus as Status } from "../hooks/useNoteEditor";
 
-type Props = { status: Status };
+type Props = {
+  status: Status;
+  onRetry?: () => void;
+};
 
 const labels: Record<Status, string | null> = {
   idle: null,
@@ -10,7 +14,7 @@ const labels: Record<Status, string | null> = {
   error: "Could not save",
 };
 
-export function SaveStatus({ status }: Props) {
+export function SaveStatus({ status, onRetry }: Props) {
   const label = labels[status];
   if (!label) return null;
 
@@ -22,15 +26,22 @@ export function SaveStatus({ status }: Props) {
         : "text-slate-500";
 
   return (
-    <span className={`text-xs font-medium tabular-nums transition-opacity ${color}`} aria-live="polite">
-      {status === "saving" ? (
-        <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
-          {label}
-        </span>
-      ) : (
-        label
-      )}
-    </span>
+    <div className={`flex items-center gap-2 text-xs font-medium tabular-nums ${color}`}>
+      <span aria-live="polite">
+        {status === "saving" ? (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+            {label}
+          </span>
+        ) : (
+          label
+        )}
+      </span>
+      {status === "error" && onRetry ? (
+        <Button variant="ghost" className="h-7 px-2 text-xs" onClick={onRetry}>
+          Retry
+        </Button>
+      ) : null}
+    </div>
   );
 }

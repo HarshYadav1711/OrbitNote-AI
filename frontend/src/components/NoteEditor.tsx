@@ -20,6 +20,7 @@ type Props = {
   onArchive: (archived: boolean) => void;
   onCreateNote: () => void;
   isCreating: boolean;
+  onSaveNow: () => void;
 };
 
 export function NoteEditor({
@@ -33,6 +34,7 @@ export function NoteEditor({
   onArchive,
   onCreateNote,
   isCreating,
+  onSaveNow,
 }: Props) {
   const [showAssistMobile, setShowAssistMobile] = useState(false);
   const ai = useNoteAI(noteId, draft);
@@ -111,7 +113,7 @@ export function NoteEditor({
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-6 py-3 dark:border-slate-800">
-          <SaveStatus status={saveStatus} />
+          <SaveStatus status={saveStatus} onRetry={saveStatus === "error" ? onSaveNow : undefined} />
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"

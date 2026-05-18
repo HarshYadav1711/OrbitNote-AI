@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "../components/Button";
+import { Spinner } from "../components/Spinner";
 import { useAuth } from "../hooks/useAuth";
 
 export function LandingPage() {
@@ -11,13 +12,18 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <span className="text-lg font-bold text-brand-600">OrbitNote</span>
           <nav className="flex items-center gap-3 text-sm">
-            {!isLoading && isAuthenticated ? (
+            {isLoading ? (
+              <Spinner className="h-4 w-4" />
+            ) : isAuthenticated ? (
               <Link to="/app">
                 <Button>Open workspace</Button>
               </Link>
             ) : (
               <>
-                <Link to="/login" className="text-slate-600 hover:text-slate-900 dark:text-slate-300">
+                <Link
+                  to="/login"
+                  className="text-slate-600 hover:text-slate-900 dark:text-slate-300"
+                >
                   Sign in
                 </Link>
                 <Link to="/signup">
@@ -31,13 +37,15 @@ export function LandingPage() {
 
       <main className="mx-auto max-w-5xl px-4 py-20">
         <div className="max-w-2xl">
-          <p className="text-sm font-medium uppercase tracking-wide text-brand-600">Foundation</p>
+          <p className="text-sm font-medium uppercase tracking-wide text-brand-600">
+            Notes workspace
+          </p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            A calm home for your notes
+            Write, organize, and share with calm focus
           </h1>
           <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-            OrbitNote is a modular notes workspace. This scaffold ships authentication, core data
-            models, and a clean app shell—ready for feature work without extra complexity.
+            OrbitNote combines a fast editor, optional local AI assist, public read-only links, and
+            a productivity dashboard—without locking you into a cloud stack on day one.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/signup">
@@ -54,16 +62,16 @@ export function LandingPage() {
         <section className="mt-20 grid gap-4 sm:grid-cols-3">
           {[
             {
-              title: "Secure auth",
-              body: "JWT sessions in httpOnly cookies with bcrypt password hashing.",
+              title: "Autosave editor",
+              body: "Categories, tags, and debounced saves keep your notes current without friction.",
             },
             {
-              title: "Core data model",
-              body: "Users, notes, and tags with Alembic migrations from day one.",
+              title: "Assist panel",
+              body: "Summaries, action items, and titles via Ollama when available, with a reliable offline fallback.",
             },
             {
-              title: "Local-first",
-              body: "SQLite by default—no Docker or paid services required to start.",
+              title: "Public sharing",
+              body: "Generate secure read-only links for collaborators—no account required to view.",
             },
           ].map((item) => (
             <article
