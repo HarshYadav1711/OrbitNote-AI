@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
+import { applyTheme } from "./lib/theme";
 import { useUIStore } from "./store/uiStore";
 
 const queryClient = new QueryClient({
@@ -18,7 +19,7 @@ const queryClient = new QueryClient({
 function Bootstrap() {
   const darkMode = useUIStore((s) => s.darkMode);
   React.useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
+    applyTheme(darkMode);
   }, [darkMode]);
 
   return (

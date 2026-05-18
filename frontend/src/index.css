@@ -2,8 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  @apply transition-colors duration-150;
+}
+
 body {
-  @apply antialiased;
+  @apply antialiased transition-colors duration-150;
 }
 
 @layer components {

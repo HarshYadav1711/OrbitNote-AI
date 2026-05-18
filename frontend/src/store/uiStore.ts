@@ -1,26 +1,27 @@
 import { create } from "zustand";
-
-const STORAGE_KEY = "orbitnote-dark";
-
-function readInitialDarkMode(): boolean {
-  if (typeof window === "undefined") return false;
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored !== null) return stored === "true";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
-}
+import { applyTheme, initThemeFromStorage, persistTheme } from "../lib/theme";
 
 interface UIState {
   darkMode: boolean;
+  setDarkMode: (dark: boolean) => void;
   toggleDarkMode: () => void;
 }
 
+function setTheme(dark: boolean): void {
+  applyTheme(dark);
+  persistTheme(dark);
+}
+
 export const useUIStore = create<UIState>((set) => ({
-  darkMode: readInitialDarkMode(),
+  darkMode: initThemeFromStorage(),
+  setDarkMode: (dark) => {
+    setTheme(dark);
+    set({ darkMode: dark });
+  },
   toggleDarkMode: () =>
     set((state) => {
       const next = !state.darkMode;
-      document.documentElement.classList.toggle("dark", next);
-      localStorage.setItem(STORAGE_KEY, String(next));
+      setTheme(next);
       return { darkMode: next };
     }),
 }));

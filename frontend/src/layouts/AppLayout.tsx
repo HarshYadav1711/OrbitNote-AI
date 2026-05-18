@@ -1,8 +1,8 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { ApiStatusBanner } from "../components/ApiStatusBanner";
 import { Button } from "../components/Button";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { useAuth } from "../hooks/useAuth";
-import { useUIStore } from "../store/uiStore";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-lg px-3 py-1.5 text-sm font-medium transition ${
@@ -14,7 +14,6 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
 export function AppLayout() {
   const navigate = useNavigate();
   const { user, logoutMutation } = useAuth();
-  const { darkMode, toggleDarkMode } = useUIStore();
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -41,10 +40,10 @@ export function AppLayout() {
             </nav>
           </div>
           <nav className="flex items-center gap-2 text-sm sm:gap-3">
-            <Button variant="ghost" onClick={toggleDarkMode} aria-pressed={darkMode}>
-              {darkMode ? "Light" : "Dark"}
-            </Button>
-            <span className="hidden max-w-[8rem] truncate text-slate-500 sm:inline">{user?.name}</span>
+            <ThemeToggle />
+            <span className="hidden max-w-[8rem] truncate text-slate-500 dark:text-slate-400 sm:inline">
+              {user?.name}
+            </span>
             <Button variant="secondary" onClick={handleLogout} disabled={logoutMutation.isPending}>
               {logoutMutation.isPending ? "Signing out…" : "Logout"}
             </Button>
@@ -73,6 +72,8 @@ export function AppLayout() {
 
 function mobileNavClass(isActive: boolean) {
   return `flex flex-1 items-center justify-center py-3 text-sm font-medium ${
-    isActive ? "text-brand-600" : "text-slate-500"
+    isActive
+      ? "text-brand-600 dark:text-brand-400"
+      : "text-slate-500 dark:text-slate-400"
   }`;
 }

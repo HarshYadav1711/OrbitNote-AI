@@ -61,7 +61,7 @@ export function LoginPage() {
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Sign in to your workspace.</p>
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-500">Email</span>
+          <span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Email</span>
           <Input
             placeholder="you@example.com"
             type="email"
@@ -72,7 +72,9 @@ export function LoginPage() {
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-500">Password</span>
+          <span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+            Password
+          </span>
           <Input
             placeholder="Your password"
             type="password"
@@ -83,7 +85,7 @@ export function LoginPage() {
           />
         </label>
         {error ? (
-          <p className="text-sm text-red-600" role="alert">
+          <p className="text-sm text-red-600 dark:text-red-400" role="alert">
             {error}
           </p>
         ) : null}
@@ -93,7 +95,7 @@ export function LoginPage() {
       </form>
       <p className="mt-4 text-sm">
         No account?{" "}
-        <Link className="text-brand-600" to="/signup">
+        <Link className="text-brand-600 dark:text-brand-400" to="/signup">
           Create one
         </Link>
       </p>

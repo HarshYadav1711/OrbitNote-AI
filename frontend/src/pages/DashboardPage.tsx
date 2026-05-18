@@ -37,7 +37,7 @@ function WeeklyChart({ days }: { days: WeeklyActivityDay[] }) {
                 title={`${day.notes_updated} edits, ${day.ai_requests} AI runs`}
               />
             </div>
-            <span className="text-[10px] text-slate-500">{formatDayLabel(day.date)}</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">{formatDayLabel(day.date)}</span>
             <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400">
               {total}
             </span>
@@ -86,7 +86,7 @@ export function DashboardPage() {
     <div className="mx-auto max-w-4xl space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Productivity</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           A quick look at your notes and AI activity.
         </p>
       </div>
@@ -99,7 +99,7 @@ export function DashboardPage() {
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
         <h2 className="text-sm font-semibold">Weekly activity</h2>
-        <p className="mt-0.5 text-xs text-slate-500">Note edits + AI runs per day</p>
+        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Note edits + AI runs per day</p>
         <WeeklyChart days={data.weekly_activity} />
       </section>
 
@@ -107,7 +107,7 @@ export function DashboardPage() {
         <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
           <h2 className="text-sm font-semibold">Recently edited</h2>
           {data.recently_edited.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-500">No notes yet.</p>
+            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">No notes yet.</p>
           ) : (
             <ul className="mt-3 space-y-2">
               {data.recently_edited.map((n) => (
@@ -130,13 +130,13 @@ export function DashboardPage() {
         <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
           <h2 className="text-sm font-semibold">Most-used tags</h2>
           {data.top_tags.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-500">Add tags to notes to see trends.</p>
+            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Add tags to notes to see trends.</p>
           ) : (
             <ul className="mt-3 space-y-2">
               {data.top_tags.map((t) => (
                 <li key={t.name} className="flex items-center justify-between text-sm">
                   <span className="text-brand-700 dark:text-brand-300">#{t.name}</span>
-                  <span className="text-slate-500">{t.count} notes</span>
+                  <span className="text-slate-500 dark:text-slate-400">{t.count} notes</span>
                 </li>
               ))}
             </ul>
@@ -146,11 +146,11 @@ export function DashboardPage() {
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
         <h2 className="text-sm font-semibold">AI usage</h2>
-        <p className="mt-0.5 text-xs text-slate-500">
+        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
           {data.ai_usage.total_requests} total requests across all notes
         </p>
         {Object.keys(data.ai_usage.by_type).length === 0 ? (
-          <p className="mt-3 text-sm text-slate-500">
+          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
             Use Assist on a note to generate summaries, actions, or titles.
           </p>
         ) : (
@@ -171,7 +171,7 @@ export function DashboardPage() {
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
       <p className="mt-1 text-3xl font-bold tabular-nums">{value}</p>
     </div>
   );

@@ -2,7 +2,7 @@ type Props = { className?: string; label?: string };
 
 export function Spinner({ className = "h-5 w-5", label }: Props) {
   return (
-    <span className="inline-flex items-center gap-2 text-slate-500" role="status">
+    <span className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-400" role="status">
       <svg
         className={`animate-spin ${className}`}
         viewBox="0 0 24 24"

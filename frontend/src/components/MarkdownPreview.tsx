@@ -11,7 +11,9 @@ export function MarkdownPreview({ content, className = "" }: Props) {
 
   if (!content.trim()) {
     return (
-      <p className={`text-base leading-relaxed text-slate-400 ${className}`.trim()}>
+      <p
+        className={`text-base leading-relaxed text-slate-400 dark:text-slate-500 ${className}`.trim()}
+      >
         Nothing to preview yet.
       </p>
     );

@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import { EmptyState } from "../components/EmptyState";
 import { Spinner } from "../components/Spinner";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function PublicNotePage() {
   const { token } = useParams();
@@ -24,7 +25,10 @@ export function PublicNotePage() {
           <Link to="/" className="text-lg font-bold text-brand-600">
             OrbitNote
           </Link>
-          <span className="text-xs text-slate-500">Shared note</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-500 dark:text-slate-400">Shared note</span>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -65,7 +69,7 @@ export function PublicNotePage() {
             </div>
 
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{note.title}</h1>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Last updated{" "}
               {new Date(note.updated_at).toLocaleString(undefined, {
                 dateStyle: "medium",
@@ -84,7 +88,7 @@ export function PublicNotePage() {
 
       <footer className="border-t border-slate-200 py-6 text-center text-xs text-slate-400 dark:border-slate-800">
         Shared with OrbitNote ·{" "}
-        <Link to="/signup" className="text-brand-600 hover:underline">
+        <Link to="/signup" className="text-brand-600 hover:underline dark:text-brand-400">
           Create your own notes
         </Link>
       </footer>

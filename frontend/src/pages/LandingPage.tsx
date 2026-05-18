@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "../components/Button";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { Spinner } from "../components/Spinner";
 import { useAuth } from "../hooks/useAuth";
 
@@ -12,6 +13,7 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <span className="text-lg font-bold text-brand-600">OrbitNote</span>
           <nav className="flex items-center gap-3 text-sm">
+            <ThemeToggle />
             {isLoading ? (
               <Spinner className="h-4 w-4" />
             ) : isAuthenticated ? (

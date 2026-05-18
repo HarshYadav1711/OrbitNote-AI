@@ -62,7 +62,7 @@ export function SignupPage() {
       </p>
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-500">Name</span>
+          <span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Name</span>
           <Input
             placeholder="Your name"
             autoComplete="name"
@@ -72,7 +72,7 @@ export function SignupPage() {
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-500">Email</span>
+          <span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Email</span>
           <Input
             placeholder="you@example.com"
             type="email"
@@ -83,7 +83,9 @@ export function SignupPage() {
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-500">Password</span>
+          <span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+            Password
+          </span>
           <Input
             placeholder="At least 8 characters"
             type="password"
@@ -95,7 +97,7 @@ export function SignupPage() {
           />
         </label>
         {error ? (
-          <p className="text-sm text-red-600" role="alert">
+          <p className="text-sm text-red-600 dark:text-red-400" role="alert">
             {error}
           </p>
         ) : null}
@@ -105,7 +107,7 @@ export function SignupPage() {
       </form>
       <p className="mt-4 text-sm">
         Already have an account?{" "}
-        <Link className="text-brand-600" to="/login">
+        <Link className="text-brand-600 dark:text-brand-400" to="/login">
           Sign in
         </Link>
       </p>

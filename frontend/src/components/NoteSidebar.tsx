@@ -154,7 +154,7 @@ export function NoteSidebar({
             <Spinner label="Loading notes…" />
           </div>
         ) : notes.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-slate-500">
+          <p className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
             {filters.archived ? "No archived notes" : "No notes match your filters"}
           </p>
         ) : (
@@ -186,7 +186,7 @@ export function NoteSidebar({
                         {formatRelative(note.updated_at)}
                       </span>
                     </div>
-                    <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
+                    <p className="mt-0.5 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
                       {note.content.trim() || "Empty note"}
                     </p>
                     {(note.category || note.tags.length > 0) && (

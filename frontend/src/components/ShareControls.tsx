@@ -60,7 +60,7 @@ export function ShareControls({ note }: Props) {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-900/50">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+        <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Sharing
         </span>
         {note.is_public ? (
@@ -74,7 +74,7 @@ export function ShareControls({ note }: Props) {
         )}
       </div>
 
-      <p className="mt-2 text-xs text-slate-500">
+      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
         {note.is_public
           ? "Anyone with the link can view this note. Editing still requires your account."
           : "Create a secure link to share a read-only copy of this note."}
@@ -116,7 +116,7 @@ export function ShareControls({ note }: Props) {
       </div>
 
       {(enableMutation.isError || disableMutation.isError) && (
-        <p className="mt-2 text-xs text-red-600">Could not update sharing. Try again.</p>
+        <p className="mt-2 text-xs text-red-600 dark:text-red-400">Could not update sharing. Try again.</p>
       )}
     </div>
   );

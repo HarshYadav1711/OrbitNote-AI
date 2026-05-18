@@ -27,7 +27,9 @@ function FeatureBlock({
   return (
     <section className="border-b border-slate-200 py-4 last:border-0 dark:border-slate-800">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          {label}
+        </h3>
         {provider ? (
           <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium uppercase text-slate-500 dark:bg-slate-800">
             {provider}

@@ -160,7 +160,7 @@ export function NoteEditor({
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <label className="block">
-              <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Category
               </span>
               <input
@@ -172,7 +172,7 @@ export function NoteEditor({
               />
             </label>
             <label className="block">
-              <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Tags
               </span>
               <input
@@ -196,7 +196,7 @@ export function NoteEditor({
               />
             </div>
             <div className="flex min-h-0 min-w-0 flex-1 flex-col border-t border-slate-200 pt-4 dark:border-slate-800 lg:border-t-0 lg:pt-0 lg:pl-5">
-              <span className="mb-2 block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <span className="mb-2 block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Preview
               </span>
               <MarkdownPreview content={draft.content} className="min-h-0 flex-1 overflow-y-auto" />
