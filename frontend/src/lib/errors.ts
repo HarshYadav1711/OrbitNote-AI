@@ -2,6 +2,8 @@
 export const ERROR_COPY = {
   connection:
     "Could not reach OrbitNote. Check your connection and try again.",
+  apiMisconfigured:
+    "This site cannot reach the OrbitNote API. The deployment may be missing VITE_API_BASE.",
   aiTimeout: "Assist took too long. Try again in a moment.",
   requestFailed: "Something went wrong. Please try again.",
   noteNotFound: "This note may have been deleted or you don't have access.",

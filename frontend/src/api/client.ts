@@ -93,6 +93,12 @@ async function request<T>(
   if (res.status === 204) {
     return undefined as T;
   }
+
+  const contentType = res.headers.get("content-type") ?? "";
+  if (contentType.includes("text/html")) {
+    throw new ApiError(ERROR_COPY.apiMisconfigured, 0);
+  }
+
   return res.json() as Promise<T>;
 }
 
@@ -177,6 +183,6 @@ export const api = {
   disableShare: (id: number) =>
     request<ShareLink>(`/notes/${id}/share`, { method: "DELETE" }),
   publicNote: (token: string) =>
-    request<PublicNote>(`/public/notes/${token}`, {}, false),
+    request<PublicNote>(`/public/notes/${encodeURIComponent(token)}`, {}, false),
   dashboard: () => request<DashboardData>("/analytics/dashboard"),
 };

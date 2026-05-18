@@ -9,7 +9,7 @@ import { ThemeToggle } from "../components/ThemeToggle";
 
 export function PublicNotePage() {
   const { token } = useParams();
-  const shareToken = token ?? "";
+  const shareToken = token ? decodeURIComponent(token) : "";
 
   const noteQuery = useQuery({
     queryKey: ["public-note", shareToken],
@@ -24,8 +24,9 @@ export function PublicNotePage() {
     if (!shareToken.trim()) return ERROR_COPY.publicNoteInvalid;
     if (!noteQuery.isError) return ERROR_COPY.publicNoteInvalid;
     const err = noteQuery.error;
-    if (err instanceof ApiError && err.status === 0) {
-      return getErrorMessage(err, ERROR_COPY.connection);
+    if (err instanceof ApiError) {
+      if (err.status === 404) return ERROR_COPY.publicNoteInvalid;
+      if (err.status === 0) return getErrorMessage(err, ERROR_COPY.connection);
     }
     return ERROR_COPY.publicNoteInvalid;
   }
