@@ -1,14 +1,17 @@
-import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type NotePayload } from "../api/client";
+import {
+  applyNotePayload,
+  findNoteInListCaches,
+  isOptimisticNoteId,
+  patchNoteInCaches,
+  restoreNoteDetail,
+  restoreNotesCaches,
+  snapshotNoteDetail,
+  snapshotNotesCaches,
+} from "../lib/noteCache";
 import type { Note } from "../types";
-
-function patchNoteInCaches(queryClient: QueryClient, updated: Note) {
-  queryClient.setQueryData(["note", updated.id], updated);
-  queryClient.setQueriesData<Note[]>({ queryKey: ["notes"] }, (prev) =>
-    prev?.map((n) => (n.id === updated.id ? updated : n)),
-  );
-}
 
 function draftFromNote(note: Note): NoteDraft {
   return {
@@ -72,8 +75,15 @@ export function useNoteEditor(noteId: number | null) {
   const noteQuery = useQuery({
     queryKey: ["note", noteId],
     queryFn: () => api.getNote(noteId!),
-    enabled: noteId != null,
+    enabled: noteId != null && !isOptimisticNoteId(noteId),
   });
+
+  const cachedNote =
+    noteId != null && isOptimisticNoteId(noteId)
+      ? queryClient.getQueryData<Note>(["note", noteId])
+      : undefined;
+
+  const note = noteQuery.data ?? cachedNote;
 
   useEffect(() => {
     activeNoteIdRef.current = noteId;
@@ -84,24 +94,25 @@ export function useNoteEditor(noteId: number | null) {
     }
   }, [noteId]);
 
-  useEffect(() => {
-    if (!noteQuery.data) return;
-    setDraft((current) => {
-      if (current && isDraftDirty(current, noteQuery.data)) {
-        return current;
-      }
-      return draftFromNote(noteQuery.data);
-    });
-    setSaveStatus("saved");
-    skipSaveRef.current = true;
-  }, [noteQuery.data]);
-
   const updateMutation = useMutation({
     mutationFn: ({ id, body }: { id: number; body: NotePayload }) => api.updateNote(id, body),
-    onMutate: () => {
+    onMutate: async ({ id, body }) => {
       if (activeNoteIdRef.current === noteId) {
         setSaveStatus("saving");
       }
+
+      await queryClient.cancelQueries({ queryKey: ["note", id] });
+      await queryClient.cancelQueries({ queryKey: ["notes"] });
+
+      const previousNote = snapshotNoteDetail(queryClient, id);
+      const previousLists = snapshotNotesCaches(queryClient);
+      const current = previousNote ?? findNoteInListCaches(queryClient, id);
+
+      if (current) {
+        patchNoteInCaches(queryClient, applyNotePayload(current, body));
+      }
+
+      return { previousNote, previousLists };
     },
     onSuccess: (updated) => {
       if (activeNoteIdRef.current !== updated.id) return;
@@ -110,36 +121,51 @@ export function useNoteEditor(noteId: number | null) {
       setSaveStatus("saved");
       skipSaveRef.current = true;
     },
-    onError: () => {
+    onError: (_err, { id }, context) => {
+      if (!context) return;
+      restoreNoteDetail(queryClient, id, context.previousNote);
+      restoreNotesCaches(queryClient, context.previousLists);
       if (activeNoteIdRef.current === noteId) {
         setSaveStatus("error");
       }
     },
   });
 
+  useEffect(() => {
+    if (!note || updateMutation.isPending) return;
+    setDraft((current) => {
+      if (current && isDraftDirty(current, note)) {
+        return current;
+      }
+      return draftFromNote(note);
+    });
+    setSaveStatus("saved");
+    skipSaveRef.current = true;
+  }, [note, updateMutation.isPending]);
+
   const saveNow = useCallback(() => {
-    if (!noteId || !draft || !noteQuery.data) return;
-    if (!isDraftDirty(draft, noteQuery.data)) {
+    if (!noteId || isOptimisticNoteId(noteId) || !draft || !note) return;
+    if (!isDraftDirty(draft, note)) {
       setSaveStatus("saved");
       return;
     }
     updateMutation.mutate({ id: noteId, body: draftToPayload(draft) });
-  }, [noteId, draft, noteQuery.data, updateMutation]);
+  }, [noteId, draft, note, updateMutation]);
 
   useEffect(() => {
-    if (!noteId || !draft || !noteQuery.data) return;
+    if (!noteId || isOptimisticNoteId(noteId) || !draft || !note) return;
     if (skipSaveRef.current) {
       skipSaveRef.current = false;
       return;
     }
-    if (!isDraftDirty(draft, noteQuery.data)) {
+    if (!isDraftDirty(draft, note)) {
       setSaveStatus((s) => (s === "unsaved" || s === "error" ? "saved" : s));
       return;
     }
     setSaveStatus("unsaved");
     const timer = window.setTimeout(saveNow, AUTOSAVE_MS);
     return () => window.clearTimeout(timer);
-  }, [draft, noteId, noteQuery.data, saveNow]);
+  }, [draft, noteId, note, saveNow]);
 
   const updateDraft = useCallback((patch: Partial<NoteDraft>) => {
     setDraft((prev) => (prev ? { ...prev, ...patch } : prev));
@@ -148,17 +174,10 @@ export function useNoteEditor(noteId: number | null) {
 
   const archive = useCallback(
     (archived: boolean) => {
-      if (!noteId) return;
-      updateMutation.mutate(
-        { id: noteId, body: { is_archived: archived } },
-        {
-          onSuccess: (updated) => {
-            patchNoteInCaches(queryClient, updated);
-          },
-        },
-      );
+      if (!noteId || isOptimisticNoteId(noteId)) return;
+      updateMutation.mutate({ id: noteId, body: { is_archived: archived } });
     },
-    [noteId, updateMutation, queryClient],
+    [noteId, updateMutation],
   );
 
   return {
@@ -167,9 +186,9 @@ export function useNoteEditor(noteId: number | null) {
     saveStatus,
     saveNow,
     archive,
-    isLoading: noteQuery.isLoading,
-    isError: noteQuery.isError,
-    note: noteQuery.data,
+    isLoading: noteId != null && !isOptimisticNoteId(noteId) && noteQuery.isLoading,
+    isError: noteId != null && !isOptimisticNoteId(noteId) && noteQuery.isError,
+    note,
     isSaving: updateMutation.isPending,
   };
 }

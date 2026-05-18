@@ -2,6 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import {
+  isOptimisticNoteId,
+  prependNoteToActiveLists,
+  replaceTempNoteInCaches,
+  restoreNotesCaches,
+  snapshotNotesCaches,
+} from "../lib/noteCache";
 import { NoteEditor } from "../components/NoteEditor";
 import { NoteSidebar, type SidebarFilters } from "../components/NoteSidebar";
 import { EmptyState } from "../components/EmptyState";
@@ -68,9 +75,51 @@ export function WorkspacePage() {
 
   const createMutation = useMutation({
     mutationFn: () => api.createNote({ title: "Untitled", content: "", tags: [] }),
-    onSuccess: (note) => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      navigate(`/app/${note.id}`);
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["notes"] });
+
+      const previousLists = snapshotNotesCaches(queryClient);
+      const tempId = -Date.now();
+      const now = new Date().toISOString();
+      const optimisticNote: Note = {
+        id: tempId,
+        title: "Untitled",
+        content: "",
+        category: null,
+        is_archived: false,
+        is_public: false,
+        share_token: null,
+        tags: [],
+        created_at: now,
+        updated_at: now,
+      };
+
+      prependNoteToActiveLists(queryClient, optimisticNote);
+
+      navigate(`/app/${tempId}`);
+      setSidebarOpen(false);
+
+      return { previousLists, tempId };
+    },
+    onSuccess: (note, _vars, context) => {
+      if (!context) return;
+      replaceTempNoteInCaches(queryClient, context.tempId, note);
+      if (window.location.pathname.endsWith(`/${context.tempId}`)) {
+        navigate(`/app/${note.id}`, { replace: true });
+      }
+    },
+    onError: (_err, _vars, context) => {
+      if (!context) return;
+      restoreNotesCaches(queryClient, context.previousLists);
+      queryClient.removeQueries({ queryKey: ["note", context.tempId] });
+      if (window.location.pathname.endsWith(`/${context.tempId}`)) {
+        const remaining =
+          queryClient
+            .getQueriesData<Note[]>({ queryKey: ["notes"] })
+            .flatMap(([, list]) => list ?? [])
+            .filter((n) => !isOptimisticNoteId(n.id)) ?? [];
+        navigate(remaining.length > 0 ? `/app/${remaining[0].id}` : "/app", { replace: true });
+      }
     },
   });
 
@@ -85,7 +134,6 @@ export function WorkspacePage() {
     editor.archive(archived);
     if (archived) {
       navigate("/app");
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
     }
   };
 
