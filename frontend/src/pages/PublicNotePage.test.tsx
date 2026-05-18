@@ -35,7 +35,7 @@ describe("PublicNotePage", () => {
 
     expect(await screen.findByText("Note unavailable")).toBeInTheDocument();
     expect(
-      screen.getByText(/link may have expired or the note is no longer shared/i),
+      screen.getByText(/link may have been revoked/i),
     ).toBeInTheDocument();
   });
 

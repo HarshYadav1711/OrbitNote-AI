@@ -27,6 +27,9 @@ def test_dashboard_metrics(client):
     assert res.status_code == 200
     data = res.json()
     assert data["total_notes"] == 2
+    assert data["archived_notes"] == 0
+    assert data["shared_notes"] == 0
+    assert data["ai_assisted_notes"] >= 1
     assert len(data["recently_edited"]) >= 2
     assert any(t["name"] == "work" for t in data["top_tags"])
     assert data["ai_usage"]["total_requests"] >= 1

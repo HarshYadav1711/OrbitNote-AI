@@ -29,6 +29,8 @@ class WeeklyActivityDay(BaseModel):
 class DashboardResponse(BaseModel):
     total_notes: int
     archived_notes: int
+    shared_notes: int
+    ai_assisted_notes: int
     recently_edited: list[RecentlyEditedNote]
     top_tags: list[TagUsage]
     ai_usage: AIUsageStats

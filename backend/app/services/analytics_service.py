@@ -24,6 +24,22 @@ def get_dashboard(db: Session, user_id: int) -> dict:
         .scalar()
         or 0
     )
+    shared_notes = (
+        db.query(func.count(Note.id))
+        .filter(
+            Note.user_id == user_id,
+            Note.is_public.is_(True),
+            Note.is_archived.is_(False),
+        )
+        .scalar()
+        or 0
+    )
+    ai_assisted_notes = (
+        db.query(func.count(func.distinct(AIHistory.note_id)))
+        .filter(AIHistory.user_id == user_id)
+        .scalar()
+        or 0
+    )
 
     recent = (
         db.query(Note)
@@ -96,6 +112,8 @@ def get_dashboard(db: Session, user_id: int) -> dict:
     return {
         "total_notes": total_notes,
         "archived_notes": archived_notes,
+        "shared_notes": shared_notes,
+        "ai_assisted_notes": ai_assisted_notes,
         "recently_edited": [
             {"id": n.id, "title": n.title, "updated_at": n.updated_at} for n in recent
         ],

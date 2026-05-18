@@ -155,32 +155,43 @@ export function NoteSidebar({
           </div>
         ) : notes.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-            {filters.archived ? "No archived notes" : "No notes match your filters"}
+            {filters.archived
+              ? "No archived notes yet. Archive notes you are done collaborating on."
+              : filters.search || filters.tag || filters.category
+                ? "No notes match your filters. Try adjusting search or tags."
+                : "Your workspace is ready. Create a note and share a link when you need input."}
           </p>
         ) : (
           <ul className="p-2">
             {notes.map((note) => {
               const active = note.id === activeNoteId;
+              const shared = note.is_public && Boolean(note.share_token);
               return (
                 <li key={note.id}>
                   <button
                     type="button"
                     onClick={() => onSelectNote(note.id)}
-                    className={`mb-1 w-full rounded-lg px-3 py-2.5 text-left transition ${
+                    className={`mb-1 w-full rounded-lg border-l-2 px-3 py-2.5 text-left transition ${
+                      shared ? "border-l-emerald-500" : "border-l-transparent"
+                    } ${
                       active
-                        ? "bg-white shadow-sm ring-1 ring-brand-500/30 dark:bg-slate-900"
-                        : "hover:bg-white/70 dark:hover:bg-slate-900/60"
+                        ? shared
+                          ? "bg-emerald-50/80 shadow-sm ring-1 ring-emerald-500/25 dark:bg-emerald-950/30"
+                          : "bg-white shadow-sm ring-1 ring-brand-500/30 dark:bg-slate-900"
+                        : shared
+                          ? "hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20"
+                          : "hover:bg-white/70 dark:hover:bg-slate-900/60"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="truncate text-sm font-medium">{note.title}</span>
                       <span className="flex shrink-0 items-center gap-1 text-[10px] text-slate-400">
-                        {note.is_public ? (
+                        {shared ? (
                           <span
-                            className="rounded bg-emerald-100 px-1 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                            title="Shared publicly"
+                            className="rounded bg-emerald-100 px-1.5 py-0.5 font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                            title="Shared with link"
                           >
-                            link
+                            Shared
                           </span>
                         ) : null}
                         {formatRelative(note.updated_at)}

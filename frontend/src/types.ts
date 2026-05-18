@@ -63,6 +63,8 @@ export interface WeeklyActivityDay {
 export interface DashboardData {
   total_notes: number;
   archived_notes: number;
+  shared_notes: number;
+  ai_assisted_notes: number;
   recently_edited: RecentlyEditedNote[];
   top_tags: TagUsage[];
   ai_usage: AIUsageStats;

@@ -77,7 +77,7 @@ export function NoteEditor({
       <div className="flex flex-1 items-center justify-center p-8">
         <EmptyState
           title="Select a note"
-          description="Pick a note from the sidebar or create a new one to start writing."
+          description="Choose a note from your workspace, or create one to draft and share with your team."
           action={
             <Button onClick={onCreateNote} disabled={isCreating}>
               {isCreating ? "Creating…" : "New note"}
@@ -119,7 +119,15 @@ export function NoteEditor({
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-6 py-3 dark:border-slate-800">
           <SaveStatus status={saveStatus} onRetry={saveStatus === "error" ? onSaveNow : undefined} />
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {note.is_public && note.share_token ? (
+              <span
+                className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                title={`Shared link active since ${updatedLabel}`}
+              >
+                Shared
+              </span>
+            ) : null}
             <Button
               variant="ghost"
               className="text-xs lg:hidden"

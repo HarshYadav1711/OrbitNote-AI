@@ -8,9 +8,22 @@ type Props = {
   note: Note;
 };
 
+function formatSharedSince(dateStr: string): string {
+  return new Date(dateStr).toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
 export function ShareControls({ note }: Props) {
   const queryClient = useQueryClient();
+  const [shareUrl, setShareUrl] = useState<string | null>(
+    note.is_public && note.share_token
+      ? `${window.location.origin}/share/${note.share_token}`
+      : null,
+  );
   const [copied, setCopied] = useState(false);
+  const [revoked, setRevoked] = useState(false);
 
   useEffect(() => {
     setShareUrl(
@@ -18,20 +31,17 @@ export function ShareControls({ note }: Props) {
         ? `${window.location.origin}/share/${note.share_token}`
         : null,
     );
+    if (note.is_public) setRevoked(false);
   }, [note.is_public, note.share_token]);
-
-  const [shareUrl, setShareUrl] = useState<string | null>(
-    note.is_public && note.share_token
-      ? `${window.location.origin}/share/${note.share_token}`
-      : null,
-  );
 
   const enableMutation = useMutation({
     mutationFn: () => api.enableShare(note.id),
     onSuccess: (link) => {
-      setShareUrl(link.share_url);
+      setShareUrl(link.share_url ?? shareUrl);
+      setRevoked(false);
       queryClient.invalidateQueries({ queryKey: ["note", note.id] });
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 
@@ -39,33 +49,52 @@ export function ShareControls({ note }: Props) {
     mutationFn: () => api.disableShare(note.id),
     onSuccess: () => {
       setShareUrl(null);
+      setRevoked(true);
+      setCopied(false);
       queryClient.invalidateQueries({ queryKey: ["note", note.id] });
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 
-  const busy = enableMutation.isPending || disableMutation.isPending;
+  const generating = enableMutation.isPending;
+  const revoking = disableMutation.isPending;
+  const busy = generating || revoking;
+  const archived = note.is_archived;
+  const isShared = note.is_public && Boolean(note.share_token);
 
   const handleCopy = async () => {
-    if (!shareUrl) return;
+    if (!shareUrl || busy) return;
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const archivedHint = note.is_archived
-    ? "Archived notes cannot be shared until restored."
-    : null;
+  const copyLabel = copied ? "Copied!" : "Copy link";
+  const createLabel = generating ? "Generating…" : "Create share link";
+  const stopLabel = revoking ? "Revoking…" : "Revoke link";
+
+  const sharedSince = isShared ? formatSharedSince(note.updated_at) : null;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+    <div
+      className={`rounded-lg border p-3 ${
+        isShared
+          ? "border-emerald-200/80 bg-emerald-50/50 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+          : "border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/50"
+      }`}
+    >
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Sharing
         </span>
-        {note.is_public ? (
+        {revoked && !isShared ? (
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+            Revoked
+          </span>
+        ) : isShared ? (
           <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-            Public
+            Shared
           </span>
         ) : (
           <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
@@ -75,24 +104,52 @@ export function ShareControls({ note }: Props) {
       </div>
 
       <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-        {note.is_public
-          ? "Anyone with the link can view this note. Editing still requires your account."
-          : "Create a secure link to share a read-only copy of this note."}
+        {isShared
+          ? "Anyone with the link can view a read-only copy. Only you can edit in your workspace."
+          : revoked
+            ? "The previous link no longer works. Create a new link anytime to share again."
+            : "Generate a secure link teammates can open without an account."}
       </p>
 
-      {archivedHint ? <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{archivedHint}</p> : null}
+      {isShared && sharedSince ? (
+        <p className="mt-1.5 text-[11px] text-emerald-700/90 dark:text-emerald-300/90">
+          Link active since {sharedSince}
+        </p>
+      ) : null}
+
+      {archived ? (
+        <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+          Restore this note from the archive to create or copy a share link.
+        </p>
+      ) : null}
+
+      {isShared && shareUrl ? (
+        <div className="mt-3">
+          <label className="sr-only" htmlFor="share-url">
+            Share link
+          </label>
+          <input
+            id="share-url"
+            type="text"
+            readOnly
+            value={shareUrl}
+            className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-[11px] text-slate-600 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+            onFocus={(e) => e.target.select()}
+          />
+        </div>
+      ) : null}
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {note.is_public ? (
+        {isShared ? (
           <>
             <Button
               variant="secondary"
               className="text-xs"
               onClick={handleCopy}
-              disabled={!shareUrl}
+              disabled={!shareUrl || busy || archived}
               aria-live="polite"
             >
-              {copied ? "Copied!" : "Copy link"}
+              {archived ? "Unavailable" : copyLabel}
             </Button>
             <Button
               variant="ghost"
@@ -100,7 +157,7 @@ export function ShareControls({ note }: Props) {
               onClick={() => disableMutation.mutate()}
               disabled={busy}
             >
-              {busy ? "Updating…" : "Stop sharing"}
+              {stopLabel}
             </Button>
           </>
         ) : (
@@ -108,15 +165,17 @@ export function ShareControls({ note }: Props) {
             variant="secondary"
             className="text-xs"
             onClick={() => enableMutation.mutate()}
-            disabled={busy || note.is_archived}
+            disabled={busy || archived}
           >
-            {busy ? "Enabling…" : "Create share link"}
+            {archived ? "Sharing disabled" : createLabel}
           </Button>
         )}
       </div>
 
       {(enableMutation.isError || disableMutation.isError) && (
-        <p className="mt-2 text-xs text-red-600 dark:text-red-400">Could not update sharing. Try again.</p>
+        <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+          Could not update sharing. Try again.
+        </p>
       )}
     </div>
   );

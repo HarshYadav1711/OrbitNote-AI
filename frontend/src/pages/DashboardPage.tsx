@@ -87,14 +87,30 @@ export function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold">Productivity</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          A quick look at your notes and AI activity.
+          Notes, sharing, and AI activity across your workspace.
         </p>
       </div>
 
+      <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-sm font-semibold">Team & sharing</h2>
+        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+          How your notes are distributed and assisted
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <StatCard label="Shared notes" value={data.shared_notes} hint="Active public links" />
+          <StatCard label="Archived" value={data.archived_notes} hint="Stored for later" />
+          <StatCard
+            label="AI-assisted notes"
+            value={data.ai_assisted_notes}
+            hint="Notes with Assist runs"
+          />
+        </div>
+      </section>
+
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Active notes" value={data.total_notes} />
-        <StatCard label="Archived" value={data.archived_notes} />
         <StatCard label="AI requests (7d)" value={data.ai_usage.last_7_days} />
+        <StatCard label="AI requests (all time)" value={data.ai_usage.total_requests} />
       </div>
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
@@ -107,7 +123,9 @@ export function DashboardPage() {
         <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
           <h2 className="text-sm font-semibold">Recently edited</h2>
           {data.recently_edited.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">No notes yet.</p>
+            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+              Create a note in your workspace, then share a link when you need feedback.
+            </p>
           ) : (
             <ul className="mt-3 space-y-2">
               {data.recently_edited.map((n) => (
@@ -151,7 +169,7 @@ export function DashboardPage() {
         </p>
         {Object.keys(data.ai_usage.by_type).length === 0 ? (
           <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-            Use Assist on a note to generate summaries, actions, or titles.
+            Use Assist on a note to draft summaries, action items, or titles for your team.
           </p>
         ) : (
           <ul className="mt-3 space-y-2">
@@ -168,11 +186,22 @@ export function DashboardPage() {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
+function StatCard({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: number;
+  hint?: string;
+}) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-950/40">
       <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
       <p className="mt-1 text-3xl font-bold tabular-nums">{value}</p>
+      {hint ? (
+        <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{hint}</p>
+      ) : null}
     </div>
   );
 }

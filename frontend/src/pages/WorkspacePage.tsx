@@ -249,7 +249,7 @@ export function WorkspacePage() {
           <div className="flex flex-1 items-center justify-center p-8">
             <EmptyState
               title="No notes yet"
-              description="Create your first note to start capturing ideas."
+              description="Start a note for yourself or your team. When you are ready, share a read-only link—no accounts required for viewers."
               action={
                 <Button onClick={handleCreateNote} disabled={createMutation.isPending}>
                   {createMutation.isPending ? "Creating…" : "Create note"}
