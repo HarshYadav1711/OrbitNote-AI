@@ -10,3 +10,7 @@ dist/
 backend/data/*.db
 backend/data/*.db-journal
 *.tsbuildinfo
+
+# Demo media (host on Releases/YouTube; GitHub rejects files >100MB)
+demo/Demo Video/
+*.mp4

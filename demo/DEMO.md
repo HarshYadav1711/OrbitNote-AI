@@ -1,6 +1,6 @@
 # Demo video guide
 
-Record a **3–5 minute** walkthrough and save it here (e.g. `orbitnote-demo.mp4`). The recording should show the product working end-to-end, not slides alone.
+Record a **3–5 minute** walkthrough and save it locally under `demo/Demo Video/` (e.g. `OrbitNote.mp4`). Demo videos are **not committed to Git** (GitHub’s 100MB file limit). Upload the file to [GitHub Releases](https://docs.github.com/en/repositories/releasing-projects-on-github) or YouTube and link it from the repo README. The recording should show the product working end-to-end, not slides alone.
 
 ## Suggested script
 
