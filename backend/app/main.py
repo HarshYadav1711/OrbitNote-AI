@@ -1,4 +1,3 @@
-import os
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -11,10 +10,13 @@ from alembic.config import Config
 from app.api import ai, analytics, auth, notes, public
 from app.config import settings
 from app.database import ensure_sqlite_directory, get_db
+from app.logging_config import configure_logging, get_logger
+
+logger = get_logger(__name__)
 
 
 def run_migrations() -> None:
-    if os.getenv("DISABLE_MIGRATIONS"):
+    if settings.disable_migrations:
         return
     alembic_cfg = Config("alembic.ini")
     command.upgrade(alembic_cfg, "head")
@@ -22,6 +24,12 @@ def run_migrations() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    configure_logging()
+    logger.info(
+        "startup environment=%s database=%s",
+        settings.environment,
+        "sqlite" if settings.is_sqlite else "other",
+    )
     ensure_sqlite_directory()
     run_migrations()
     yield

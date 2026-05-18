@@ -30,3 +30,23 @@ def test_production_respects_explicit_cookie_env(monkeypatch):
     s = Settings(environment="production", jwt_secret="a-secure-production-secret-key")
     assert s.cookie_secure is False
     assert s.cookie_samesite == "lax"
+
+
+def test_rejects_invalid_database_url():
+    with pytest.raises(ValidationError):
+        Settings(database_url="mysql://localhost/db")
+
+
+def test_production_requires_valid_frontend_origin():
+    with pytest.raises(ValidationError):
+        Settings(
+            environment="production",
+            jwt_secret="a-secure-production-secret-key",
+            frontend_origin="not-a-url",
+        )
+
+
+def test_disable_migrations_parses_from_env(monkeypatch):
+    monkeypatch.setenv("DISABLE_MIGRATIONS", "true")
+    s = Settings()
+    assert s.disable_migrations is True

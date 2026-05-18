@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
+import { ERROR_COPY, getErrorMessage } from "../lib/errors";
 import { Button } from "./Button";
 import type { Note } from "../types";
 
@@ -24,6 +25,7 @@ export function ShareControls({ note }: Props) {
   );
   const [copied, setCopied] = useState(false);
   const [revoked, setRevoked] = useState(false);
+  const [copyError, setCopyError] = useState<string | null>(null);
 
   useEffect(() => {
     setShareUrl(
@@ -63,11 +65,24 @@ export function ShareControls({ note }: Props) {
   const archived = note.is_archived;
   const isShared = note.is_public && Boolean(note.share_token);
 
+  const shareMutationError =
+    enableMutation.isError || disableMutation.isError
+      ? getErrorMessage(
+          enableMutation.error ?? disableMutation.error,
+          ERROR_COPY.shareUpdateFailed,
+        )
+      : null;
+
   const handleCopy = async () => {
     if (!shareUrl || busy) return;
-    await navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopyError(null);
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopyError(ERROR_COPY.shareCopyFailed);
+    }
   };
 
   const copyLabel = copied ? "Copied!" : "Copy link";
@@ -172,11 +187,16 @@ export function ShareControls({ note }: Props) {
         )}
       </div>
 
-      {(enableMutation.isError || disableMutation.isError) && (
-        <p className="mt-2 text-xs text-red-600 dark:text-red-400">
-          Could not update sharing. Try again.
+      {shareMutationError ? (
+        <p className="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">
+          {shareMutationError}
         </p>
-      )}
+      ) : null}
+      {copyError ? (
+        <p className="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">
+          {copyError}
+        </p>
+      ) : null}
     </div>
   );
 }

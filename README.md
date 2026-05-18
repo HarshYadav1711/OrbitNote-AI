@@ -37,6 +37,7 @@ Authentication uses **httpOnly JWT cookies**; protected routes require a valid s
 | Layer | Responsibility |
 | ----- | -------------- |
 | `frontend/src/api/client.ts` | Typed fetch wrapper, cookie credentials |
+| `frontend/src/lib/errors.ts` | Shared API error types and user-facing copy |
 | `backend/app/api/*` | HTTP routers |
 | `backend/app/services/*` | Business logic (notes, share, AI, analytics) |
 | `backend/app/models/*` | ORM entities |
@@ -151,7 +152,8 @@ If Ollama is not running, Assist still works via the built-in fallback.
 | `COOKIE_SECURE` / `COOKIE_SAMESITE` | Auto in production | Override cookie flags if needed |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server |
 | `OLLAMA_MODEL` | `llama3.2` | Model name |
-| `DISABLE_MIGRATIONS` | — | Set `1` in tests |
+| `DISABLE_MIGRATIONS` | `false` | Set `true` or `1` in tests to skip Alembic on startup |
+| `LOG_LEVEL` | `INFO` | Backend log verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
 
 See `.env.example` for the full backend list.
 
@@ -188,7 +190,7 @@ Set `ENVIRONMENT=production`, `CORS_ORIGINS`, `FRONTEND_ORIGIN`, and `JWT_SECRET
 ## Testing
 
 ```bash
-# Backend (20 tests — auth, notes, AI, share, analytics, edge cases)
+# Backend + frontend tests (auth, notes, AI, share, analytics, edge cases)
 npm test
 
 # Lint

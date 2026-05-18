@@ -4,6 +4,7 @@ import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { Spinner } from "../components/Spinner";
 import { useAuth } from "../hooks/useAuth";
+import { getErrorMessage } from "../lib/errors";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export function LoginPage() {
       await loginMutation.mutateAsync({ email, password });
       navigate("/app");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(getErrorMessage(err, "Login failed"));
     }
   };
 

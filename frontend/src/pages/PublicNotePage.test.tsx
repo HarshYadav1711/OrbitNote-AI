@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom";
 import { PublicNotePage } from "./PublicNotePage";
 import { renderWithProviders } from "../test/render";
 import * as client from "../api/client";
+import { ERROR_COPY } from "../lib/errors";
 
 describe("PublicNotePage", () => {
   afterEach(() => {
@@ -34,9 +35,7 @@ describe("PublicNotePage", () => {
     );
 
     expect(await screen.findByText("Note unavailable")).toBeInTheDocument();
-    expect(
-      screen.getByText(/link is invalid|sharing was turned off/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(ERROR_COPY.publicNoteInvalid)).toBeInTheDocument();
   });
 
   it("renders shared note content when the request succeeds", async () => {

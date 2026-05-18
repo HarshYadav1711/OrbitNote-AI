@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { EmptyState } from "../components/EmptyState";
 import { LoadingPlaceholder } from "../components/LoadingPlaceholder";
+import { ERROR_COPY, getErrorMessage } from "../lib/errors";
 import type { WeeklyActivityDay } from "../types";
 
 const AI_TYPE_LABELS: Record<string, string> = {
@@ -17,14 +18,20 @@ function formatDayLabel(isoDate: string): string {
 }
 
 function WeeklyChart({ days }: { days: WeeklyActivityDay[] }) {
+  const safeDays = days.length > 0 ? days : [];
   const maxVal = Math.max(
     1,
-    ...days.map((d) => d.notes_updated + d.ai_requests),
+    ...safeDays.map((d) => d.notes_updated + d.ai_requests),
   );
 
   return (
     <div className="mt-4 flex items-end justify-between gap-2">
-      {days.map((day) => {
+      {safeDays.length === 0 ? (
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+          Activity will appear here once you edit notes or use Assist.
+        </p>
+      ) : null}
+      {safeDays.map((day) => {
         const total = day.notes_updated + day.ai_requests;
         const rawHeight = Math.max(4, Math.round((total / maxVal) * 96));
         const barHeight = Math.min(96, Math.round(rawHeight / 4) * 4);
@@ -59,10 +66,13 @@ export function DashboardPage() {
   }
 
   if (dashboardQuery.isError || !dashboardQuery.data) {
+    const description = dashboardQuery.isError
+      ? getErrorMessage(dashboardQuery.error, ERROR_COPY.dashboardLoadFailed)
+      : ERROR_COPY.dashboardLoadFailed;
     return (
       <EmptyState
         title="Overview unavailable"
-        description="We couldn't load your stats. Refresh to try again."
+        description={description}
         action={
           <button
             type="button"

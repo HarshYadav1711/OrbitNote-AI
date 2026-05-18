@@ -7,6 +7,7 @@ import { MarkdownPreview } from "./MarkdownPreview";
 import { SaveStatus } from "./SaveStatus";
 import { LoadingPlaceholder } from "./LoadingPlaceholder";
 import { useNoteAI } from "../hooks/useNoteAI";
+import { ERROR_COPY } from "../lib/errors";
 import type { NoteDraft, SaveStatus as Status } from "../hooks/useNoteEditor";
 import type { Note } from "../types";
 
@@ -62,7 +63,7 @@ export function NoteEditor({
       <div className="flex flex-1 items-center justify-center p-8">
         <EmptyState
           title="Note not found"
-          description="This note may have been deleted or you don't have access."
+          description={ERROR_COPY.noteNotFound}
         />
       </div>
     );
@@ -98,6 +99,7 @@ export function NoteEditor({
       onToggleHistory={() => ai.setShowHistory((v) => !v)}
       history={ai.history}
       isHistoryLoading={ai.isHistoryLoading}
+      isHistoryError={ai.isHistoryError}
       isSummaryLoading={ai.isSummaryLoading}
       isActionsLoading={ai.isActionsLoading}
       isTitleLoading={ai.isTitleLoading}

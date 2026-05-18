@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TagResponse(BaseModel):
@@ -11,17 +11,17 @@ class TagResponse(BaseModel):
 
 
 class NoteCreate(BaseModel):
-    title: str = "Untitled"
-    content: str = ""
-    category: str | None = None
-    tags: list[str] = []
+    title: str = Field(default="Untitled", max_length=255)
+    content: str = Field(default="", max_length=500_000)
+    category: str | None = Field(default=None, max_length=80)
+    tags: list[str] = Field(default_factory=list, max_length=50)
 
 
 class NoteUpdate(BaseModel):
-    title: str | None = None
-    content: str | None = None
-    category: str | None = None
-    tags: list[str] | None = None
+    title: str | None = Field(default=None, max_length=255)
+    content: str | None = Field(default=None, max_length=500_000)
+    category: str | None = Field(default=None, max_length=80)
+    tags: list[str] | None = Field(default=None, max_length=50)
     is_archived: bool | None = None
 
 

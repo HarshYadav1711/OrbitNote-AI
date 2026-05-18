@@ -5,9 +5,9 @@ from pydantic import BaseModel, Field
 
 
 class AIGenerateRequest(BaseModel):
-    content: str | None = None
-    title: str | None = None
-    category: str | None = None
+    content: str | None = Field(default=None, max_length=50_000)
+    title: str | None = Field(default=None, max_length=255)
+    category: str | None = Field(default=None, max_length=80)
 
 
 class ActionItem(BaseModel):

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { api, type AIGeneratePayload } from "../api/client";
+import { ERROR_COPY, getErrorMessage } from "../lib/errors";
 import type {
   AIActionsResult,
   AIGenerateResponse,
@@ -72,7 +73,14 @@ export function useNoteAI(
     mutationFn: () => api.generateSummary(noteId!, payload()),
     onMutate: () => setSummary((s) => ({ ...s, status: "loading", error: null })),
     onSuccess: (res) => {
-      if (!isSummary(res.result)) return;
+      if (!isSummary(res.result)) {
+        setSummary((s) => ({
+          ...s,
+          status: "error",
+          error: ERROR_COPY.aiUnexpected,
+        }));
+        return;
+      }
       setSummary({
         status: "success",
         data: res.result,
@@ -81,15 +89,26 @@ export function useNoteAI(
       });
       invalidateHistory();
     },
-    onError: (err: Error) =>
-      setSummary((s) => ({ ...s, status: "error", error: err.message })),
+    onError: (err: unknown) =>
+      setSummary((s) => ({
+        ...s,
+        status: "error",
+        error: getErrorMessage(err, ERROR_COPY.aiFailed),
+      })),
   });
 
   const actionsMutation = useMutation({
     mutationFn: () => api.extractActions(noteId!, payload()),
     onMutate: () => setActions((s) => ({ ...s, status: "loading", error: null })),
     onSuccess: (res) => {
-      if (!isActions(res.result)) return;
+      if (!isActions(res.result)) {
+        setActions((s) => ({
+          ...s,
+          status: "error",
+          error: ERROR_COPY.aiUnexpected,
+        }));
+        return;
+      }
       setActions({
         status: "success",
         data: res.result,
@@ -98,15 +117,26 @@ export function useNoteAI(
       });
       invalidateHistory();
     },
-    onError: (err: Error) =>
-      setActions((s) => ({ ...s, status: "error", error: err.message })),
+    onError: (err: unknown) =>
+      setActions((s) => ({
+        ...s,
+        status: "error",
+        error: getErrorMessage(err, ERROR_COPY.aiFailed),
+      })),
   });
 
   const titleMutation = useMutation({
     mutationFn: () => api.suggestTitle(noteId!, payload()),
     onMutate: () => setTitle((s) => ({ ...s, status: "loading", error: null })),
     onSuccess: (res) => {
-      if (!isTitle(res.result)) return;
+      if (!isTitle(res.result)) {
+        setTitle((s) => ({
+          ...s,
+          status: "error",
+          error: ERROR_COPY.aiUnexpected,
+        }));
+        return;
+      }
       setTitle({
         status: "success",
         data: res.result,
@@ -115,8 +145,12 @@ export function useNoteAI(
       });
       invalidateHistory();
     },
-    onError: (err: Error) =>
-      setTitle((s) => ({ ...s, status: "error", error: err.message })),
+    onError: (err: unknown) =>
+      setTitle((s) => ({
+        ...s,
+        status: "error",
+        error: getErrorMessage(err, ERROR_COPY.aiFailed),
+      })),
   });
 
   const reset = useCallback(() => {
@@ -140,6 +174,7 @@ export function useNoteAI(
     setShowHistory,
     history: historyQuery.data ?? [],
     isHistoryLoading: historyQuery.isLoading,
+    isHistoryError: historyQuery.isError,
     generateSummary: () => noteId && hasContent && summaryMutation.mutate(),
     generateActions: () => noteId && hasContent && actionsMutation.mutate(),
     generateTitle: () => noteId && hasContent && titleMutation.mutate(),

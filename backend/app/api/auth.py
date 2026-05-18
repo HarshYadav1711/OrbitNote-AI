@@ -5,10 +5,12 @@ from app.auth.security import create_access_token, hash_password, verify_passwor
 from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user
+from app.logging_config import get_logger, log_event
 from app.models import User
 from app.schemas.auth import LoginRequest, SignupRequest, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+logger = get_logger(__name__)
 
 
 def _set_auth_cookie(response: Response, user_id: int) -> None:
@@ -49,6 +51,7 @@ def signup(payload: SignupRequest, response: Response, db: Session = Depends(get
     db.commit()
     db.refresh(user)
     _set_auth_cookie(response, user.id)
+    log_event(logger, "auth.signup", user_id=user.id)
     return user
 
 
@@ -56,14 +59,17 @@ def signup(payload: SignupRequest, response: Response, db: Session = Depends(get
 def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email.lower()).first()
     if not user or not verify_password(payload.password, user.password_hash):
+        log_event(logger, "auth.login_failed", email=payload.email.lower())
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     _set_auth_cookie(response, user.id)
+    log_event(logger, "auth.login", user_id=user.id)
     return user
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(response: Response):
     _clear_auth_cookie(response)
+    log_event(logger, "auth.logout")
 
 
 @router.get("/me", response_model=UserResponse)

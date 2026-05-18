@@ -8,6 +8,8 @@ import type {
   User,
 } from "../types";
 import { apiUrl } from "../lib/apiBase";
+import { ApiError, ERROR_COPY, parseApiDetail } from "../lib/errors";
+
 const DEFAULT_TIMEOUT_MS = 10_000;
 const AI_TIMEOUT_MS = 90_000;
 
@@ -70,24 +72,22 @@ async function request<T>(
     );
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
-      throw new Error(
-        timeoutMs > DEFAULT_TIMEOUT_MS
-          ? "Assist took too long. Try again in a moment."
-          : "Could not reach OrbitNote. Check your connection and try again.",
+      throw new ApiError(
+        timeoutMs > DEFAULT_TIMEOUT_MS ? ERROR_COPY.aiTimeout : ERROR_COPY.connection,
       );
     }
-    throw new Error("Could not reach OrbitNote. Check your connection and try again.");
+    throw new ApiError(ERROR_COPY.connection);
   }
 
   if (!res.ok) {
-    let detail = "Request failed";
+    let detail: unknown = ERROR_COPY.requestFailed;
     try {
       const body = await res.json();
       detail = body.detail ?? detail;
     } catch {
       /* ignore */
     }
-    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+    throw new ApiError(parseApiDetail(detail), res.status);
   }
 
   if (res.status === 204) {
@@ -123,18 +123,18 @@ export const api = {
         headers: { "Content-Type": "application/json" },
       });
     } catch {
-      throw new Error("Could not reach OrbitNote. Check your connection and try again.");
+      throw new ApiError(ERROR_COPY.connection);
     }
     if (res.status === 401) return null;
     if (!res.ok) {
-      let detail = "Request failed";
+      let detail: unknown = ERROR_COPY.requestFailed;
       try {
         const body = await res.json();
         detail = body.detail ?? detail;
       } catch {
         /* ignore */
       }
-      throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+      throw new ApiError(parseApiDetail(detail), res.status);
     }
     return res.json() as Promise<User>;
   },

@@ -1,14 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models import User
 from app.schemas.ai import AIGenerateRequest, AIGenerateResponse, AIHistoryResponse
+from app.logging_config import get_logger, log_event
 from app.services.ai import service as ai_service
 from app.services.note_service import get_user_note
 
 router = APIRouter(prefix="/notes", tags=["ai"])
+logger = get_logger(__name__)
 
 
 def _resolve_content(note, payload: AIGenerateRequest) -> tuple[str, str, str | None]:
@@ -23,7 +27,7 @@ def _resolve_content(note, payload: AIGenerateRequest) -> tuple[str, str, str | 
 
 @router.post("/{note_id}/ai/summary", response_model=AIGenerateResponse)
 async def generate_summary(
-    note_id: int,
+    note_id: Annotated[int, Path(ge=1)],
     payload: AIGenerateRequest = AIGenerateRequest(),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -32,14 +36,16 @@ async def generate_summary(
     if not note:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
     content, title, category = _resolve_content(note, payload)
-    return await ai_service.generate_summary(
+    result = await ai_service.generate_summary(
         db, note, user.id, content, title, category=category
     )
+    log_event(logger, "ai.summary", user_id=user.id, note_id=note_id, provider=result.provider)
+    return result
 
 
 @router.post("/{note_id}/ai/actions", response_model=AIGenerateResponse)
 async def extract_actions(
-    note_id: int,
+    note_id: Annotated[int, Path(ge=1)],
     payload: AIGenerateRequest = AIGenerateRequest(),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -48,14 +54,16 @@ async def extract_actions(
     if not note:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
     content, title, category = _resolve_content(note, payload)
-    return await ai_service.extract_actions(
+    result = await ai_service.extract_actions(
         db, note, user.id, content, title, category=category
     )
+    log_event(logger, "ai.actions", user_id=user.id, note_id=note_id, provider=result.provider)
+    return result
 
 
 @router.post("/{note_id}/ai/title", response_model=AIGenerateResponse)
 async def suggest_title(
-    note_id: int,
+    note_id: Annotated[int, Path(ge=1)],
     payload: AIGenerateRequest = AIGenerateRequest(),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -64,14 +72,16 @@ async def suggest_title(
     if not note:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
     content, title, category = _resolve_content(note, payload)
-    return await ai_service.suggest_title(
+    result = await ai_service.suggest_title(
         db, note, user.id, content, title, category=category
     )
+    log_event(logger, "ai.title", user_id=user.id, note_id=note_id, provider=result.provider)
+    return result
 
 
 @router.get("/{note_id}/ai/history", response_model=list[AIHistoryResponse])
 def get_ai_history(
-    note_id: int,
+    note_id: Annotated[int, Path(ge=1)],
     limit: int = Query(default=20, ge=1, le=100),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),

@@ -1,11 +1,13 @@
 from datetime import datetime
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user
+from app.logging_config import get_logger, log_event
 from app.models import Note, User
 from app.schemas.note import NoteCreate, NoteResponse, NoteUpdate
 from app.schemas.share import ShareLinkResponse
@@ -13,6 +15,7 @@ from app.services.note_service import get_user_note, list_notes, sync_tags
 from app.services.share_service import disable_sharing, enable_sharing
 
 router = APIRouter(prefix="/notes", tags=["notes"])
+logger = get_logger(__name__)
 
 
 def _serialize(note: Note) -> NoteResponse:
@@ -21,9 +24,9 @@ def _serialize(note: Note) -> NoteResponse:
 
 @router.get("", response_model=list[NoteResponse])
 def get_notes(
-    q: str | None = Query(default=None),
-    tag: str | None = Query(default=None),
-    category: str | None = Query(default=None),
+    q: str | None = Query(default=None, max_length=200),
+    tag: str | None = Query(default=None, max_length=80),
+    category: str | None = Query(default=None, max_length=80),
     archived: bool = Query(default=False),
     sort: str = Query(default="updated_desc", pattern="^(updated_desc|updated_asc)$"),
     user: User = Depends(get_current_user),
@@ -55,7 +58,7 @@ def create_note(
 
 @router.get("/{note_id}", response_model=NoteResponse)
 def get_note(
-    note_id: int,
+    note_id: Annotated[int, Path(ge=1)],
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -67,7 +70,7 @@ def get_note(
 
 @router.patch("/{note_id}", response_model=NoteResponse)
 def update_note(
-    note_id: int,
+    note_id: Annotated[int, Path(ge=1)],
     payload: NoteUpdate,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -93,7 +96,7 @@ def update_note(
 
 @router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_note(
-    note_id: int,
+    note_id: Annotated[int, Path(ge=1)],
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -112,7 +115,7 @@ def _share_url(token: str | None) -> str | None:
 
 @router.post("/{note_id}/share", response_model=ShareLinkResponse)
 def enable_note_share(
-    note_id: int,
+    note_id: Annotated[int, Path(ge=1)],
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -122,6 +125,7 @@ def enable_note_share(
     enable_sharing(db, note)
     db.commit()
     db.refresh(note)
+    log_event(logger, "share.enable", user_id=user.id, note_id=note.id)
     return ShareLinkResponse(
         is_public=True,
         share_token=note.share_token,
@@ -131,7 +135,7 @@ def enable_note_share(
 
 @router.delete("/{note_id}/share", response_model=ShareLinkResponse)
 def disable_note_share(
-    note_id: int,
+    note_id: Annotated[int, Path(ge=1)],
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -141,4 +145,5 @@ def disable_note_share(
     disable_sharing(db, note)
     db.commit()
     db.refresh(note)
+    log_event(logger, "share.disable", user_id=user.id, note_id=note.id)
     return ShareLinkResponse(is_public=False, share_token=None, share_url=None)

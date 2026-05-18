@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { ApiError, ERROR_COPY, getErrorMessage } from "../lib/errors";
 import { EmptyState } from "../components/EmptyState";
 import { MarkdownPreview } from "../components/MarkdownPreview";
 import { LoadingPlaceholder } from "../components/LoadingPlaceholder";
@@ -18,6 +19,16 @@ export function PublicNotePage() {
   });
 
   const note = noteQuery.data;
+
+  function shareUnavailableMessage(): string {
+    if (!shareToken.trim()) return ERROR_COPY.publicNoteInvalid;
+    if (!noteQuery.isError) return ERROR_COPY.publicNoteInvalid;
+    const err = noteQuery.error;
+    if (err instanceof ApiError && err.status === 0) {
+      return getErrorMessage(err, ERROR_COPY.connection);
+    }
+    return ERROR_COPY.publicNoteInvalid;
+  }
 
   return (
     <div className="public-note-page min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
@@ -38,10 +49,10 @@ export function PublicNotePage() {
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
         {noteQuery.isLoading ? (
           <LoadingPlaceholder label="Opening note…" className="py-20" />
-        ) : noteQuery.isError || !note ? (
+        ) : !shareToken.trim() || noteQuery.isError || !note ? (
           <EmptyState
             title="Note unavailable"
-            description="This link is invalid or sharing was turned off."
+            description={shareUnavailableMessage()}
             action={
               <Link
                 to="/"
@@ -96,10 +107,16 @@ export function PublicNotePage() {
             </section>
 
             <div className="mt-8 sm:mt-10">
-              <MarkdownPreview
-                content={note.content}
-                className="public-note-content text-[17px] leading-[1.75] sm:text-lg"
-              />
+              {note.content.trim() ? (
+                <MarkdownPreview
+                  content={note.content}
+                  className="public-note-content text-[17px] leading-[1.75] sm:text-lg"
+                />
+              ) : (
+                <p className="text-sm italic text-slate-500 dark:text-slate-400">
+                  {ERROR_COPY.publicNoteEmpty}
+                </p>
+              )}
             </div>
           </article>
         )}

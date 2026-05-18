@@ -4,6 +4,7 @@ import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { Spinner } from "../components/Spinner";
 import { useAuth } from "../hooks/useAuth";
+import { getErrorMessage } from "../lib/errors";
 
 export function SignupPage() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export function SignupPage() {
       await signupMutation.mutateAsync({ name, email, password });
       navigate("/app");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Signup failed");
+      setError(getErrorMessage(err, "Signup failed"));
     }
   };
 

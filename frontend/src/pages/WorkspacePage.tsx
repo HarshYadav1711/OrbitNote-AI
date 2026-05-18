@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatModShortcut } from "../lib/keyboard";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
+import { ERROR_COPY, getErrorMessage } from "../lib/errors";
 import {
   isOptimisticNoteId,
   prependNoteToActiveLists,
@@ -46,6 +47,7 @@ export function WorkspacePage() {
     archived: false,
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const focusSearch = useCallback(() => {
@@ -86,6 +88,7 @@ export function WorkspacePage() {
   const createMutation = useMutation({
     mutationFn: () => api.createNote({ title: "Untitled", content: "", tags: [] }),
     onMutate: async () => {
+      setCreateError(null);
       await queryClient.cancelQueries({ queryKey: ["notes"] });
 
       const previousLists = snapshotNotesCaches(queryClient);
@@ -118,7 +121,8 @@ export function WorkspacePage() {
         navigate(`/app/${note.id}`, { replace: true });
       }
     },
-    onError: (_err, _vars, context) => {
+    onError: (err, _vars, context) => {
+      setCreateError(getErrorMessage(err, ERROR_COPY.createNoteFailed));
       if (!context) return;
       restoreNotesCaches(queryClient, context.previousLists);
       queryClient.removeQueries({ queryKey: ["note", context.tempId] });
@@ -151,6 +155,9 @@ export function WorkspacePage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.deleteNote(id),
+    onError: () => {
+      window.alert(ERROR_COPY.deleteNoteFailed);
+    },
     onSuccess: (_data, deletedId) => {
       queryClient.removeQueries({ queryKey: ["note", deletedId] });
       queryClient.setQueryData<Note[]>(listQueryKey, (prev) =>
@@ -233,11 +240,19 @@ export function WorkspacePage() {
           <span className="text-xs text-slate-400">{shortcutHint}</span>
         </div>
 
+        {createError ? (
+          <p
+            className="border-b border-red-200 bg-red-50 px-4 py-2 text-center text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300"
+            role="alert"
+          >
+            {createError}
+          </p>
+        ) : null}
         {notesQuery.isError ? (
           <div className="flex flex-1 items-center justify-center p-8">
             <EmptyState
               title="Couldn't load notes"
-              description="Check your connection and try again."
+              description={getErrorMessage(notesQuery.error, ERROR_COPY.notesLoadFailed)}
               action={
                 <Button variant="secondary" onClick={() => notesQuery.refetch()}>
                   Retry

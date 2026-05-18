@@ -252,6 +252,7 @@ type Props = {
   onToggleHistory: () => void;
   history: AIHistoryEntry[];
   isHistoryLoading: boolean;
+  isHistoryError: boolean;
   isSummaryLoading: boolean;
   isActionsLoading: boolean;
   isTitleLoading: boolean;
@@ -271,6 +272,7 @@ export function NoteAIPanel({
   onToggleHistory,
   history,
   isHistoryLoading,
+  isHistoryError,
   isSummaryLoading,
   isActionsLoading,
   isTitleLoading,
@@ -357,6 +359,10 @@ export function NoteAIPanel({
                 <Spinner className="h-4 w-4" />
                 <span className="text-xs text-slate-400">Loading…</span>
               </div>
+            ) : isHistoryError ? (
+              <p className="text-xs text-red-600 dark:text-red-400" role="alert">
+                Could not load assist history.
+              </p>
             ) : (
               <HistoryList entries={history} />
             )

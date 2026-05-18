@@ -64,8 +64,8 @@ alembic upgrade head
 | `ENVIRONMENT` | `production` |
 | `DATABASE_URL` | Supabase PostgreSQL URI |
 | `JWT_SECRET` | Long random string (16+ chars; validated at startup) |
-| `CORS_ORIGINS` | `https://your-app.vercel.app` (comma-separated if multiple) |
-| `FRONTEND_ORIGIN` | `https://your-app.vercel.app` (used for share links) |
+| `CORS_ORIGINS` | `https://your-app.vercel.app` (comma-separated if multiple; must be valid http(s) URLs in production) |
+| `FRONTEND_ORIGIN` | `https://your-app.vercel.app` (used for share links; validated at startup in production) |
 | `JWT_EXPIRE_MINUTES` | Optional (default `10080`) |
 | `COOKIE_NAME` | Optional (default `orbitnote_token`) |
 
@@ -77,7 +77,8 @@ alembic upgrade head
 | `COOKIE_SAMESITE` | Default `none` in production (cross-origin cookies) |
 | `OLLAMA_BASE_URL` | Private Ollama instance; omit for rule-based AI fallback |
 | `OLLAMA_MODEL` | Model name |
-| `DISABLE_MIGRATIONS` | Set `1` only for tests |
+| `DISABLE_MIGRATIONS` | Set `true` or `1` only for tests |
+| `LOG_LEVEL` | `INFO` (default), `DEBUG`, `WARNING`, or `ERROR` |
 
 ### Health endpoints
 
