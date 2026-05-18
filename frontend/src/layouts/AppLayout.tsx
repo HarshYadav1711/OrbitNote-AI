@@ -1,38 +1,38 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import { Button } from "../components/Button";
 import { useAuth } from "../hooks/useAuth";
 import { useUIStore } from "../store/uiStore";
 
 export function AppLayout() {
+  const navigate = useNavigate();
   const { user, logoutMutation } = useAuth();
   const { darkMode, toggleDarkMode } = useUIStore();
 
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => navigate("/login"),
+    });
+  };
+
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+    <div className="flex min-h-screen flex-col">
+      <header className="shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+        <div className="flex items-center justify-between px-4 py-3">
           <Link to="/app" className="text-lg font-bold text-brand-600">
             OrbitNote
           </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <NavLink
-              to="/app"
-              end
-              className={({ isActive }) => (isActive ? "font-semibold text-brand-600" : "")}
-            >
-              Workspace
-            </NavLink>
+          <nav className="flex items-center gap-3 text-sm">
             <Button variant="ghost" onClick={toggleDarkMode}>
               {darkMode ? "Light" : "Dark"}
             </Button>
-            <span className="text-slate-500">{user?.name}</span>
-            <Button variant="secondary" onClick={() => logoutMutation.mutate()}>
-              Logout
+            <span className="hidden text-slate-500 sm:inline">{user?.name}</span>
+            <Button variant="secondary" onClick={handleLogout} disabled={logoutMutation.isPending}>
+              {logoutMutation.isPending ? "Signing out…" : "Logout"}
             </Button>
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="min-h-0 flex-1 px-4 py-6">
         <Outlet />
       </main>
     </div>
