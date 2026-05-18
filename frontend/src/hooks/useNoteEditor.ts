@@ -65,12 +65,16 @@ function isDraftDirty(draft: NoteDraft, note: Note): boolean {
   );
 }
 
+type SaveVariables = { id: number; body: NotePayload; generation: number };
+
 export function useNoteEditor(noteId: number | null) {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<NoteDraft | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const skipSaveRef = useRef(true);
   const activeNoteIdRef = useRef(noteId);
+  const draftRef = useRef<NoteDraft | null>(null);
+  const saveGenerationRef = useRef(0);
 
   const noteQuery = useQuery({
     queryKey: ["note", noteId],
@@ -86,7 +90,12 @@ export function useNoteEditor(noteId: number | null) {
   const note = noteQuery.data ?? cachedNote;
 
   useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
+
+  useEffect(() => {
     activeNoteIdRef.current = noteId;
+    saveGenerationRef.current += 1;
     skipSaveRef.current = true;
     setSaveStatus("idle");
     if (noteId == null) {
@@ -95,8 +104,9 @@ export function useNoteEditor(noteId: number | null) {
   }, [noteId]);
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, body }: { id: number; body: NotePayload }) => api.updateNote(id, body),
-    onMutate: async ({ id, body }) => {
+    mutationFn: ({ id, body }: SaveVariables) => api.updateNote(id, body),
+    onMutate: async ({ id, body, generation }) => {
+      if (generation !== saveGenerationRef.current) return;
       if (activeNoteIdRef.current === noteId) {
         setSaveStatus("saving");
       }
@@ -112,16 +122,32 @@ export function useNoteEditor(noteId: number | null) {
         patchNoteInCaches(queryClient, applyNotePayload(current, body));
       }
 
-      return { previousNote, previousLists };
+      return { previousNote, previousLists, generation };
     },
-    onSuccess: (updated) => {
+    onSuccess: (updated, { generation }) => {
+      if (generation !== saveGenerationRef.current) return;
       if (activeNoteIdRef.current !== updated.id) return;
+
       patchNoteInCaches(queryClient, updated);
-      setDraft(draftFromNote(updated));
-      setSaveStatus("saved");
+
+      let stillDirty = false;
+      setDraft((current) => {
+        if (!current) return draftFromNote(updated);
+        stillDirty = isDraftDirty(current, updated);
+        if (stillDirty) return current;
+        return draftFromNote(updated);
+      });
+
+      if (stillDirty) {
+        skipSaveRef.current = false;
+        setSaveStatus("unsaved");
+        return;
+      }
       skipSaveRef.current = true;
+      setSaveStatus("saved");
     },
-    onError: (_err, { id }, context) => {
+    onError: (_err, { id, generation }, context) => {
+      if (generation !== saveGenerationRef.current) return;
       if (!context) return;
       restoreNoteDetail(queryClient, id, context.previousNote);
       restoreNotesCaches(queryClient, context.previousLists);
@@ -144,13 +170,20 @@ export function useNoteEditor(noteId: number | null) {
   }, [note, updateMutation.isPending]);
 
   const saveNow = useCallback(() => {
-    if (!noteId || isOptimisticNoteId(noteId) || !draft || !note) return;
-    if (!isDraftDirty(draft, note)) {
+    const currentDraft = draftRef.current;
+    if (!noteId || isOptimisticNoteId(noteId) || !currentDraft || !note) return;
+    if (updateMutation.isPending) return;
+    if (!isDraftDirty(currentDraft, note)) {
       setSaveStatus("saved");
       return;
     }
-    updateMutation.mutate({ id: noteId, body: draftToPayload(draft) });
-  }, [noteId, draft, note, updateMutation]);
+    const generation = ++saveGenerationRef.current;
+    updateMutation.mutate({
+      id: noteId,
+      body: draftToPayload(currentDraft),
+      generation,
+    });
+  }, [noteId, note, updateMutation]);
 
   useEffect(() => {
     if (!noteId || isOptimisticNoteId(noteId) || !draft || !note) return;
@@ -165,7 +198,7 @@ export function useNoteEditor(noteId: number | null) {
     setSaveStatus("unsaved");
     const timer = window.setTimeout(saveNow, AUTOSAVE_MS);
     return () => window.clearTimeout(timer);
-  }, [draft, noteId, note, saveNow]);
+  }, [draft, noteId, note, saveNow, updateMutation.isPending]);
 
   const updateDraft = useCallback((patch: Partial<NoteDraft>) => {
     setDraft((prev) => (prev ? { ...prev, ...patch } : prev));
@@ -175,7 +208,8 @@ export function useNoteEditor(noteId: number | null) {
   const archive = useCallback(
     (archived: boolean) => {
       if (!noteId || isOptimisticNoteId(noteId)) return;
-      updateMutation.mutate({ id: noteId, body: { is_archived: archived } });
+      const generation = ++saveGenerationRef.current;
+      updateMutation.mutate({ id: noteId, body: { is_archived: archived }, generation });
     },
     [noteId, updateMutation],
   );
