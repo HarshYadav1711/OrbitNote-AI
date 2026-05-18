@@ -86,3 +86,17 @@ def test_ai_history(client):
 def test_ai_requires_auth(client):
     res = client.post("/notes/1/ai/summary", json={})
     assert res.status_code == 401
+
+
+def test_ai_endpoints_reject_missing_note(client):
+    _signup_and_note(client, "content")  # creates note id 1 for this user
+    client.post("/auth/logout")
+
+    client.post(
+        "/auth/signup",
+        json={"name": "Other", "email": "other@example.com", "password": "password123"},
+    )
+
+    for path in ("summary", "actions", "title"):
+        res = client.post("/notes/1/ai/" + path, json={})
+        assert res.status_code == 404

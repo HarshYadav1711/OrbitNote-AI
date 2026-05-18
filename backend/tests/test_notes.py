@@ -5,6 +5,22 @@ def _signup(client):
     )
 
 
+def test_notes_require_authentication(client):
+    assert client.get("/notes").status_code == 401
+    assert client.post("/notes", json={"title": "x", "content": ""}).status_code == 401
+
+
+def test_get_note_by_id(client):
+    _signup(client)
+    created = client.post("/notes", json={"title": "One", "content": "Body"})
+    note_id = created.json()["id"]
+
+    fetched = client.get(f"/notes/{note_id}")
+    assert fetched.status_code == 200
+    assert fetched.json()["title"] == "One"
+    assert fetched.json()["content"] == "Body"
+
+
 def test_notes_crud_and_filters(client):
     _signup(client)
 

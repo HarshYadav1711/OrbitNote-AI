@@ -12,7 +12,7 @@
     "format": "npm run format:backend && npm run format:frontend",
     "format:backend": "cd backend && ruff format .",
     "format:frontend": "cd frontend && npm run format",
-    "test": "node scripts/run-pytest.cjs",
+    "test": "node scripts/run-pytest.cjs && npm run test --prefix frontend",
     "db:migrate": "cd backend && alembic upgrade head"
   },
   "devDependencies": {
