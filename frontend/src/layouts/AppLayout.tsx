@@ -44,7 +44,12 @@ export function AppLayout() {
             <span className="hidden max-w-[8rem] truncate text-slate-500 dark:text-slate-400 sm:inline">
               {user?.name}
             </span>
-            <Button variant="secondary" onClick={handleLogout} disabled={logoutMutation.isPending}>
+            <Button
+              variant="secondary"
+              className="shrink-0 text-xs sm:text-sm"
+              onClick={handleLogout}
+              disabled={logoutMutation.isPending}
+            >
               {logoutMutation.isPending ? "Signing out…" : "Sign out"}
             </Button>
           </nav>
@@ -65,6 +70,18 @@ export function AppLayout() {
         <NavLink to="/app/dashboard" className={({ isActive }) => mobileNavClass(isActive)}>
           Overview
         </NavLink>
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={logoutMutation.isPending}
+          className={`flex flex-1 items-center justify-center py-3 text-sm font-medium ${
+            logoutMutation.isPending
+              ? "text-slate-400"
+              : "text-slate-500 dark:text-slate-400"
+          }`}
+        >
+          {logoutMutation.isPending ? "Signing out…" : "Sign out"}
+        </button>
       </nav>
     </div>
   );

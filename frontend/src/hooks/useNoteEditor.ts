@@ -98,9 +98,7 @@ export function useNoteEditor(noteId: number | null) {
     saveGenerationRef.current += 1;
     skipSaveRef.current = true;
     setSaveStatus("idle");
-    if (noteId == null) {
-      setDraft(null);
-    }
+    setDraft(null);
   }, [noteId]);
 
   const updateMutation = useMutation({
@@ -159,6 +157,7 @@ export function useNoteEditor(noteId: number | null) {
 
   useEffect(() => {
     if (!note || updateMutation.isPending) return;
+    if (noteId != null && note.id !== noteId) return;
     setDraft((current) => {
       if (current && isDraftDirty(current, note)) {
         return current;
@@ -167,7 +166,7 @@ export function useNoteEditor(noteId: number | null) {
     });
     setSaveStatus("saved");
     skipSaveRef.current = true;
-  }, [note, updateMutation.isPending]);
+  }, [note, noteId, updateMutation.isPending]);
 
   const saveNow = useCallback(() => {
     const currentDraft = draftRef.current;
