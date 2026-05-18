@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { formatModShortcut } from "../lib/keyboard";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import {
@@ -45,6 +46,15 @@ export function WorkspacePage() {
     archived: false,
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const focusSearch = useCallback(() => {
+    setSidebarOpen(true);
+    const input = searchInputRef.current;
+    if (!input) return;
+    input.focus({ preventScroll: false });
+    input.select();
+  }, []);
 
   const debouncedSearch = useDebounce(filters.search, 200);
 
@@ -182,8 +192,11 @@ export function WorkspacePage() {
   useWorkspaceShortcuts({
     onSave: () => editor.saveNow(),
     onNewNote: handleCreateNote,
+    onFocusSearch: focusSearch,
     enabled: !createMutation.isPending,
   });
+
+  const shortcutHint = `${formatModShortcut("k")} search · ${formatModShortcut("s")} save · ${formatModShortcut("n", { shift: true })} new`;
 
   return (
     <div className="-mx-4 -my-6 flex h-[calc(100vh-3.5rem)] overflow-hidden">
@@ -206,6 +219,7 @@ export function WorkspacePage() {
         isCreating={createMutation.isPending}
         categories={categories}
         tags={tags}
+        searchInputRef={searchInputRef}
         className={`fixed inset-y-0 left-0 z-30 w-72 transform transition-transform lg:relative lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
@@ -216,7 +230,7 @@ export function WorkspacePage() {
           <Button variant="secondary" className="text-xs" onClick={() => setSidebarOpen(true)}>
             Notes
           </Button>
-          <span className="text-xs text-slate-400">Ctrl+N new · Ctrl+S save</span>
+          <span className="text-xs text-slate-400">{shortcutHint}</span>
         </div>
 
         {notesQuery.isError ? (

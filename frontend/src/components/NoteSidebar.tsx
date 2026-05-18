@@ -1,3 +1,5 @@
+import type { Ref } from "react";
+import { formatModShortcut } from "../lib/keyboard";
 import type { Note } from "../types";
 import { Spinner } from "./Spinner";
 
@@ -20,6 +22,7 @@ type Props = {
   categories: string[];
   tags: string[];
   className?: string;
+  searchInputRef?: Ref<HTMLInputElement>;
 };
 
 function formatRelative(dateStr: string): string {
@@ -48,7 +51,10 @@ export function NoteSidebar({
   categories,
   tags,
   className = "",
+  searchInputRef,
 }: Props) {
+  const newNoteShortcut = formatModShortcut("n", { shift: true });
+  const searchShortcut = formatModShortcut("k");
   return (
     <aside
       className={`flex h-full w-72 shrink-0 flex-col border-r border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/50 ${className}`}
@@ -59,11 +65,14 @@ export function NoteSidebar({
             Search notes
           </label>
           <input
+            ref={searchInputRef}
             id="note-search"
             type="search"
             placeholder="Search notes…"
             value={filters.search}
             onChange={(e) => onFiltersChange({ search: e.target.value })}
+            aria-keyshortcuts="Control+K Meta+K"
+            title={`Focus search (${searchShortcut})`}
             className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-brand-500/30 placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
           />
           <button
@@ -71,7 +80,8 @@ export function NoteSidebar({
             onClick={onCreateNote}
             disabled={isCreating}
             aria-label="New note"
-            title="New note (Ctrl+N)"
+            aria-keyshortcuts="Control+Shift+N Meta+Shift+N"
+            title={`New note (${newNoteShortcut})`}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-lg font-medium text-white transition hover:bg-brand-700 disabled:opacity-50"
           >
             +

@@ -1,24 +1,40 @@
 import { useEffect } from "react";
+import { isModKey } from "../lib/keyboard";
 
 type Handlers = {
   onSave: () => void;
   onNewNote: () => void;
+  onFocusSearch: () => void;
   enabled?: boolean;
 };
 
-export function useWorkspaceShortcuts({ onSave, onNewNote, enabled = true }: Handlers) {
+export function useWorkspaceShortcuts({
+  onSave,
+  onNewNote,
+  onFocusSearch,
+  enabled = true,
+}: Handlers) {
   useEffect(() => {
     if (!enabled) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      const mod = event.metaKey || event.ctrlKey;
-      if (!mod) return;
+      if (!isModKey(event) || event.altKey) return;
 
       const key = event.key.toLowerCase();
-      if (key === "s") {
+
+      if (key === "s" && !event.shiftKey) {
         event.preventDefault();
         onSave();
-      } else if (key === "n") {
+        return;
+      }
+
+      if (key === "k" && !event.shiftKey) {
+        event.preventDefault();
+        onFocusSearch();
+        return;
+      }
+
+      if (key === "n" && event.shiftKey) {
         event.preventDefault();
         onNewNote();
       }
@@ -26,5 +42,5 @@ export function useWorkspaceShortcuts({ onSave, onNewNote, enabled = true }: Han
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onSave, onNewNote, enabled]);
+  }, [onSave, onNewNote, onFocusSearch, enabled]);
 }
