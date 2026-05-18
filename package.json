@@ -13,7 +13,9 @@
     "format:backend": "cd backend && ruff format .",
     "format:frontend": "cd frontend && npm run format",
     "test": "node scripts/run-pytest.cjs && npm run test --prefix frontend",
-    "db:migrate": "cd backend && alembic upgrade head"
+    "db:migrate": "cd backend && alembic upgrade head",
+    "build:frontend": "npm run build --prefix frontend",
+    "start:backend": "node scripts/run-backend-prod.cjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

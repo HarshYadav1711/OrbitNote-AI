@@ -1,14 +1,16 @@
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from alembic import command
 from alembic.config import Config
 from app.api import ai, analytics, auth, notes, public
 from app.config import settings
-from app.database import ensure_sqlite_directory
+from app.database import ensure_sqlite_directory, get_db
 
 
 def run_migrations() -> None:
@@ -44,4 +46,13 @@ app.include_router(analytics.router)
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "environment": settings.environment}
+
+
+@app.get("/health/ready")
+def health_ready(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="database unavailable") from exc
+    return {"status": "ok", "database": "ok"}

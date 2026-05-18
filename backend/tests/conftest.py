@@ -8,6 +8,7 @@ from sqlalchemy.pool import StaticPool
 
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["JWT_SECRET"] = "test-secret-key"
+os.environ["ENVIRONMENT"] = "development"
 os.environ["DISABLE_MIGRATIONS"] = "1"
 
 from app.database import Base, get_db  # noqa: E402

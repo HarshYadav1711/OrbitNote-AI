@@ -17,10 +17,19 @@ def _set_auth_cookie(response: Response, user_id: int) -> None:
         key=settings.cookie_name,
         value=token,
         httponly=True,
-        samesite="lax",
-        secure=False,
+        samesite=settings.cookie_samesite,
+        secure=settings.cookie_secure,
         max_age=settings.jwt_expire_minutes * 60,
         path="/",
+    )
+
+
+def _clear_auth_cookie(response: Response) -> None:
+    response.delete_cookie(
+        settings.cookie_name,
+        path="/",
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
     )
 
 
@@ -54,7 +63,7 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(response: Response):
-    response.delete_cookie(settings.cookie_name, path="/")
+    _clear_auth_cookie(response)
 
 
 @router.get("/me", response_model=UserResponse)

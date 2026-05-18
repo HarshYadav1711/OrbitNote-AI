@@ -138,18 +138,52 @@ If Ollama is not running, Assist still works via the built-in fallback.
 
 ## Environment variables
 
+### Backend (`.env` at repo root)
+
 | Variable | Default | Description |
 | -------- | ------- | ----------- |
-| `DATABASE_URL` | `sqlite:///./data/orbitnote.db` | SQLAlchemy URL |
-| `JWT_SECRET` | *(dev placeholder)* | **Required** in production |
+| `ENVIRONMENT` | `development` | Set `production` for deploy (secure cookies, JWT validation) |
+| `DATABASE_URL` | `sqlite:///./data/orbitnote.db` | SQLAlchemy URL; use Supabase Postgres in production |
+| `JWT_SECRET` | *(dev placeholder)* | **Required** in production (16+ characters) |
 | `JWT_EXPIRE_MINUTES` | `10080` | Token lifetime |
-| `CORS_ORIGINS` | `http://localhost:5173` | Allowed browser origins |
+| `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed browser origins |
 | `FRONTEND_ORIGIN` | `http://localhost:5173` | Base URL for share links |
+| `COOKIE_SECURE` / `COOKIE_SAMESITE` | Auto in production | Override cookie flags if needed |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server |
 | `OLLAMA_MODEL` | `llama3.2` | Model name |
 | `DISABLE_MIGRATIONS` | — | Set `1` in tests |
 
-See `.env.example` for the full list.
+See `.env.example` for the full backend list.
+
+### Frontend (`frontend/.env.example`)
+
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `VITE_API_BASE` | `/api` | API origin; set to your Render/Railway URL on Vercel |
+| `VITE_DEV_API_PROXY` | `http://localhost:8000` | Vite dev proxy target only |
+
+## Deployment
+
+Production hosting is documented in **[DEPLOYMENT.md](DEPLOYMENT.md)**:
+
+- **Frontend:** Vercel (`frontend/`, `npm run build`)
+- **API:** Render or Railway (`backend/`, `uvicorn` on `$PORT`)
+- **Database:** Supabase PostgreSQL
+
+Quick start after configuring Supabase and env vars:
+
+```bash
+# API (Render/Railway uses the same start command)
+cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+# Or from repo root with a local venv
+npm run start:backend
+
+# Frontend static build
+npm run build:frontend
+```
+
+Set `ENVIRONMENT=production`, `CORS_ORIGINS`, `FRONTEND_ORIGIN`, and `JWT_SECRET` on the API. Set `VITE_API_BASE` on Vercel to your API URL when frontend and API are on different hosts.
 
 ## Testing
 
@@ -223,7 +257,7 @@ In the workspace (intentionally minimal):
 
 | Method | Path | Auth |
 | ------ | ---- | ---- |
-| `GET` | `/health` | No |
+| `GET` | `/health`, `/health/ready` | No |
 | `POST` | `/auth/signup`, `/login`, `/logout` | No |
 | `GET` | `/auth/me` | Cookie |
 | `GET/POST` | `/notes` | Cookie |
@@ -238,7 +272,7 @@ Interactive docs: `http://localhost:8000/docs` when the API is running.
 
 ## Future improvements
 
-- Note deletion and version history
+- ~~Note deletion~~ and version history
 - Per-user tag namespaces (tags are currently global by name)
 - Rate limiting on public and AI endpoints
 - Bearer token auth for API clients

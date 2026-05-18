@@ -7,8 +7,7 @@ import type {
   ShareLink,
   User,
 } from "../types";
-
-const API_BASE = "/api";
+import { apiUrl } from "../lib/apiBase";
 const DEFAULT_TIMEOUT_MS = 10_000;
 const AI_TIMEOUT_MS = 90_000;
 
@@ -56,7 +55,7 @@ async function request<T>(
   let res: Response;
   try {
     res = await fetchWithTimeout(
-      `${API_BASE}${path}`,
+      apiUrl(path),
       {
         credentials: auth ? "include" : "omit",
         headers: {
@@ -117,7 +116,7 @@ export const api = {
   me: async (): Promise<User | null> => {
     let res: Response;
     try {
-      res = await fetchWithTimeout(`${API_BASE}/auth/me`, {
+      res = await fetchWithTimeout(apiUrl("/auth/me"), {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
