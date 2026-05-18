@@ -7,6 +7,95 @@ body {
 }
 
 @layer components {
+  .markdown-preview > *:first-child {
+    margin-top: 0;
+  }
+
+  .markdown-preview > *:last-child {
+    margin-bottom: 0;
+  }
+
+  .markdown-preview h1,
+  .markdown-preview h2,
+  .markdown-preview h3,
+  .markdown-preview h4 {
+    @apply font-semibold tracking-tight text-slate-900 dark:text-slate-100;
+  }
+
+  .markdown-preview h1 {
+    @apply mb-4 mt-6 text-2xl;
+  }
+
+  .markdown-preview h2 {
+    @apply mb-3 mt-5 text-xl;
+  }
+
+  .markdown-preview h3 {
+    @apply mb-2 mt-4 text-lg;
+  }
+
+  .markdown-preview p {
+    @apply my-3;
+  }
+
+  .markdown-preview ul,
+  .markdown-preview ol {
+    @apply my-3 pl-6;
+  }
+
+  .markdown-preview ul {
+    @apply list-disc;
+  }
+
+  .markdown-preview ol {
+    @apply list-decimal;
+  }
+
+  .markdown-preview li {
+    @apply my-1;
+  }
+
+  .markdown-preview li > p {
+    @apply my-1;
+  }
+
+  .markdown-preview blockquote {
+    @apply my-4 border-l-4 border-slate-200 pl-4 text-slate-600 dark:border-slate-700 dark:text-slate-400;
+  }
+
+  .markdown-preview code {
+    @apply rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200;
+  }
+
+  .markdown-preview pre {
+    @apply my-4 overflow-x-auto rounded-lg bg-slate-100 p-4 dark:bg-slate-900;
+  }
+
+  .markdown-preview pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .markdown-preview a {
+    @apply text-brand-600 underline decoration-brand-600/30 underline-offset-2 hover:decoration-brand-600 dark:text-brand-400 dark:decoration-brand-400/30;
+  }
+
+  .markdown-preview hr {
+    @apply my-6 border-slate-200 dark:border-slate-800;
+  }
+
+  .markdown-preview table {
+    @apply my-4 w-full border-collapse text-sm;
+  }
+
+  .markdown-preview th,
+  .markdown-preview td {
+    @apply border border-slate-200 px-3 py-2 dark:border-slate-700;
+  }
+
+  .markdown-preview th {
+    @apply bg-slate-50 font-medium dark:bg-slate-900;
+  }
+
   .weekly-chart-bar {
     width: 100%;
     max-width: 2rem;

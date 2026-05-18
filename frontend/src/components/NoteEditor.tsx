@@ -3,6 +3,7 @@ import { Button } from "./Button";
 import { EmptyState } from "./EmptyState";
 import { NoteAIPanel } from "./NoteAIPanel";
 import { ShareControls } from "./ShareControls";
+import { MarkdownPreview } from "./MarkdownPreview";
 import { SaveStatus } from "./SaveStatus";
 import { Spinner } from "./Spinner";
 import { useNoteAI } from "../hooks/useNoteAI";
@@ -184,12 +185,23 @@ export function NoteEditor({
             </label>
           </div>
 
-          <textarea
-            value={draft.content}
-            onChange={(e) => onDraftChange({ content: e.target.value })}
-            placeholder="Start writing…"
-            className="mt-6 min-h-[40vh] w-full flex-1 resize-none border-0 bg-transparent text-base leading-relaxed outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600 lg:min-h-[50vh]"
-          />
+          <div className="mt-6 flex min-h-[40vh] flex-1 flex-col gap-4 lg:min-h-[50vh] lg:flex-row lg:gap-0 lg:divide-x lg:divide-slate-200 dark:lg:divide-slate-800">
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col lg:pr-5">
+              <textarea
+                value={draft.content}
+                onChange={(e) => onDraftChange({ content: e.target.value })}
+                placeholder="Start writing…"
+                aria-label="Note content"
+                className="min-h-[28vh] w-full flex-1 resize-none border-0 bg-transparent text-base leading-relaxed outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600 lg:min-h-0"
+              />
+            </div>
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col border-t border-slate-200 pt-4 dark:border-slate-800 lg:border-t-0 lg:pt-0 lg:pl-5">
+              <span className="mb-2 block text-xs font-medium uppercase tracking-wide text-slate-500">
+                Preview
+              </span>
+              <MarkdownPreview content={draft.content} className="min-h-0 flex-1 overflow-y-auto" />
+            </div>
+          </div>
 
           <div className="mt-6 max-w-md">
             <ShareControls note={note} />
