@@ -45,6 +45,8 @@ async def lifespan(_: FastAPI):
 
     yield
 
+    print("DATABASE URL:", settings.database_url)
+
 def run_migrations() -> None:
     if settings.disable_migrations:
         return
