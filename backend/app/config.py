@@ -50,14 +50,8 @@ class Settings(BaseSettings):
     def database_url_must_be_supported(cls, v: str) -> str:
         if not v.strip():
             raise ValueError("DATABASE_URL must not be empty")
-        if not (
-            v.startswith("sqlite:")
-            or v.startswith("postgresql")
-            or v.startswith("postgres:")
-        ):
-            raise ValueError(
-                "DATABASE_URL must use sqlite:// or postgresql:// (or postgres://)"
-            )
+        if not (v.startswith("sqlite:") or v.startswith("postgresql") or v.startswith("postgres:")):
+            raise ValueError("DATABASE_URL must use sqlite:// or postgresql:// (or postgres://)")
         return v
 
     @staticmethod
@@ -75,9 +69,7 @@ class Settings(BaseSettings):
             )
         for origin in self.cors_origin_list:
             if not self._origin_is_http_url(origin):
-                raise ValueError(
-                    f"CORS origin must be a valid http(s) URL: {origin!r}"
-                )
+                raise ValueError(f"CORS origin must be a valid http(s) URL: {origin!r}")
         return self
 
     @model_validator(mode="after")

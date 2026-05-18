@@ -9,6 +9,11 @@ from app.services.ai.context import note_context_block
 
 logger = logging.getLogger(__name__)
 
+_JSON_ONLY_PREAMBLE = (
+    "You are a precise note assistant. Respond with valid JSON only "
+    "— no markdown fences or commentary."
+)
+
 
 def _parse_json_response(raw: str) -> dict:
     text = raw.strip()
@@ -53,7 +58,7 @@ async def generate_summary(
     content: str, title: str, category: str | None = None
 ) -> AISummaryResult | None:
     ctx = note_context_block(title, category)
-    prompt = f"""You are a precise note assistant. Respond with valid JSON only — no markdown fences or commentary.
+    prompt = f"""{_JSON_ONLY_PREAMBLE}
 
 Task: Summarize the note for quick review.
 Output schema: {{"summary": "one paragraph", "bullets": ["takeaway 1", "takeaway 2"]}}
@@ -86,7 +91,7 @@ async def extract_actions(
     content: str, title: str, category: str | None = None
 ) -> AIActionsResult | None:
     ctx = note_context_block(title, category)
-    prompt = f"""You are a precise note assistant. Respond with valid JSON only — no markdown fences or commentary.
+    prompt = f"""{_JSON_ONLY_PREAMBLE}
 
 Task: Extract actionable tasks from the note.
 Output schema: {{"items": [{{"text": "clear imperative task", "done": false}}]}}
@@ -125,7 +130,7 @@ async def suggest_title(
     content: str, current_title: str, category: str | None = None
 ) -> AITitleResult | None:
     ctx = note_context_block(current_title, category)
-    prompt = f"""You are a precise note assistant. Respond with valid JSON only — no markdown fences or commentary.
+    prompt = f"""{_JSON_ONLY_PREAMBLE}
 
 Task: Suggest a specific, scannable note title.
 Output schema: {{"title": "suggested title"}}

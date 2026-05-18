@@ -11,7 +11,6 @@ from app.api import ai, analytics, auth, notes, public
 from app.config import settings
 from app.database import ensure_sqlite_directory, get_db
 from app.logging_config import configure_logging, get_logger
-import traceback
 
 logger = get_logger(__name__)
 
@@ -19,47 +18,25 @@ logger = get_logger(__name__)
 def run_migrations() -> None:
     if settings.disable_migrations:
         return
-    alembic_cfg = Config("alembic.ini")
-    command.upgrade(alembic_cfg, "head")
+    try:
+        alembic_cfg = Config("alembic.ini")
+        command.upgrade(alembic_cfg, "head")
+    except Exception:
+        logger.exception("Migration failed during startup")
+        raise
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     configure_logging()
-
     logger.info(
         "startup environment=%s database=%s",
         settings.environment,
         "sqlite" if settings.is_sqlite else "other",
     )
-
-    try:
-        ensure_sqlite_directory()
-        run_migrations()
-    except Exception as e:
-        import traceback
-
-        print("STARTUP ERROR:")
-        traceback.print_exc()
-        raise e
-
+    ensure_sqlite_directory()
+    run_migrations()
     yield
-
-    print("DATABASE URL:", settings.database_url)
-
-def run_migrations() -> None:
-    if settings.disable_migrations:
-        return
-
-    try:
-        alembic_cfg = Config("alembic.ini")
-        command.upgrade(alembic_cfg, "head")
-    except Exception:
-        import traceback
-
-        print("MIGRATION ERROR:")
-        traceback.print_exc()
-        raise
 
 
 app = FastAPI(title="OrbitNote API", version="0.1.0", lifespan=lifespan)

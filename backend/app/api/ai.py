@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user
+from app.logging_config import get_logger, log_event
 from app.models import User
 from app.schemas.ai import AIGenerateRequest, AIGenerateResponse, AIHistoryResponse
-from app.logging_config import get_logger, log_event
 from app.services.ai import service as ai_service
 from app.services.note_service import get_user_note
 
@@ -36,9 +36,7 @@ async def generate_summary(
     if not note:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
     content, title, category = _resolve_content(note, payload)
-    result = await ai_service.generate_summary(
-        db, note, user.id, content, title, category=category
-    )
+    result = await ai_service.generate_summary(db, note, user.id, content, title, category=category)
     log_event(logger, "ai.summary", user_id=user.id, note_id=note_id, provider=result.provider)
     return result
 
@@ -54,9 +52,7 @@ async def extract_actions(
     if not note:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
     content, title, category = _resolve_content(note, payload)
-    result = await ai_service.extract_actions(
-        db, note, user.id, content, title, category=category
-    )
+    result = await ai_service.extract_actions(db, note, user.id, content, title, category=category)
     log_event(logger, "ai.actions", user_id=user.id, note_id=note_id, provider=result.provider)
     return result
 
@@ -72,9 +68,7 @@ async def suggest_title(
     if not note:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
     content, title, category = _resolve_content(note, payload)
-    result = await ai_service.suggest_title(
-        db, note, user.id, content, title, category=category
-    )
+    result = await ai_service.suggest_title(db, note, user.id, content, title, category=category)
     log_event(logger, "ai.title", user_id=user.id, note_id=note_id, provider=result.provider)
     return result
 

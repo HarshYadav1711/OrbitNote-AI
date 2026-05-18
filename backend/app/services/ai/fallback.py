@@ -67,24 +67,18 @@ def _list_bullets(text: str) -> list[str]:
     return bullets
 
 
-def generate_summary(
-    content: str, title: str, category: str | None = None
-) -> AISummaryResult:
+def generate_summary(content: str, title: str, category: str | None = None) -> AISummaryResult:
     text = content.strip()
     cat = normalize_category(category)
     if not text:
-        return AISummaryResult(
-            summary="Add some content to your note and try again.", bullets=[]
-        )
+        return AISummaryResult(summary="Add some content to your note and try again.", bullets=[])
 
     paragraph = _first_paragraph(text)
     summary = _sentence_case(_truncate(paragraph, 280))
 
     bullets = _heading_bullets(text) or _list_bullets(text)
     if not bullets:
-        sentences = [
-            s.strip() for s in _SENTENCE_SPLIT.split(paragraph) if len(s.strip()) > 12
-        ]
+        sentences = [s.strip() for s in _SENTENCE_SPLIT.split(paragraph) if len(s.strip()) > 12]
         for sentence in sentences[1:4]:
             bullets.append(_truncate(sentence, 120))
         if not bullets and len(sentences) == 1 and len(text) > len(paragraph):
@@ -127,9 +121,7 @@ def extract_actions(content: str, title: str, category: str | None = None) -> AI
     return AIActionsResult(items=items)
 
 
-def suggest_title(
-    content: str, current_title: str, category: str | None = None
-) -> AITitleResult:
+def suggest_title(content: str, current_title: str, category: str | None = None) -> AITitleResult:
     cat = normalize_category(category)
     lines = _lines(content)
 

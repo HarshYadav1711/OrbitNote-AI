@@ -60,9 +60,7 @@ async def _try_ollama_actions(
     return None
 
 
-async def _try_ollama_title(
-    content: str, title: str, category: str | None
-) -> AITitleResult | None:
+async def _try_ollama_title(content: str, title: str, category: str | None) -> AITitleResult | None:
     if await ollama.is_available():
         return await ollama.suggest_title(content, title, category)
     return None
