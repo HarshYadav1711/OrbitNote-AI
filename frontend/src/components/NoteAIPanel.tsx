@@ -1,7 +1,25 @@
 import { Button } from "./Button";
 import { Spinner } from "./Spinner";
+import { getAIProviderInfo } from "../lib/aiProvider";
 import type { AIJobStatus } from "../hooks/useNoteAI";
 import type { AIActionsResult, AIHistoryEntry, AISummaryResult, AITitleResult } from "../types";
+
+function ProviderBadge({ provider }: { provider: string }) {
+  const info = getAIProviderInfo(provider);
+  const isLocal = info.tone === "local";
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+        isLocal
+          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+          : "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
+      }`}
+      title={info.title}
+    >
+      {info.label}
+    </span>
+  );
+}
 
 type FeatureBlockProps = {
   label: string;
@@ -9,6 +27,7 @@ type FeatureBlockProps = {
   provider: string | null;
   error: string | null;
   isLoading: boolean;
+  loadingLabel: string;
   onGenerate: () => void;
   canGenerate: boolean;
   children: React.ReactNode;
@@ -20,6 +39,7 @@ function FeatureBlock({
   provider,
   error,
   isLoading,
+  loadingLabel,
   onGenerate,
   canGenerate,
   children,
@@ -30,11 +50,7 @@ function FeatureBlock({
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           {label}
         </h3>
-        {provider ? (
-          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium uppercase text-slate-500 dark:bg-slate-800">
-            {provider}
-          </span>
-        ) : null}
+        {status === "success" && provider ? <ProviderBadge provider={provider} /> : null}
       </div>
       <Button
         variant="secondary"
@@ -44,17 +60,123 @@ function FeatureBlock({
       >
         {isLoading ? "Working…" : `Generate ${label.toLowerCase()}`}
       </Button>
-      {isLoading ? <Spinner label="Analyzing note…" className="h-4 w-4" /> : null}
+      {isLoading ? (
+        <LoadingRow label={loadingLabel} />
+      ) : null}
       {status === "error" && error ? (
-        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+        <p
+          className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
       {status === "success" ? children : null}
       {status === "idle" && !isLoading ? (
-        <p className="text-xs text-slate-400">Uses your current note text.</p>
+        <p className="text-xs text-slate-400">Uses your current note text, title, and category.</p>
       ) : null}
     </section>
+  );
+}
+
+function LoadingRow({ label }: { label: string }) {
+  return (
+    <div
+      className="mb-3 flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-900/60"
+      role="status"
+    >
+      <Spinner className="h-4 w-4 shrink-0" />
+      <span className="text-xs text-slate-600 dark:text-slate-400">{label}</span>
+    </div>
+  );
+}
+
+function SummaryCard({ data }: { data: AISummaryResult }) {
+  return (
+    <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900/60">
+      <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{data.summary}</p>
+      {data.bullets.length > 0 ? (
+        <div>
+          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+            Key points
+          </p>
+          <ul className="space-y-1 border-t border-slate-100 pt-2 dark:border-slate-800">
+            {data.bullets.map((b) => (
+              <li
+                key={b}
+                className="flex gap-2 text-xs leading-relaxed text-slate-600 before:mt-1.5 before:shrink-0 before:text-slate-400 before:content-['•'] dark:text-slate-400"
+              >
+                {b}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ActionsResult({
+  data,
+  onAppendActions,
+}: {
+  data: AIActionsResult;
+  onAppendActions: (items: { text: string }[]) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      {data.items.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-sm text-slate-500 dark:border-slate-700">
+          No action items found in this note.
+        </p>
+      ) : (
+        <ul className="space-y-1.5 rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-900/60">
+          {data.items.map((item) => (
+            <li
+              key={item.text}
+              className="flex gap-2.5 rounded-md px-2 py-1.5 text-sm text-slate-700 dark:text-slate-300"
+            >
+              <span
+                className={`mt-0.5 shrink-0 text-base leading-none ${
+                  item.done ? "text-emerald-500" : "text-slate-400"
+                }`}
+                aria-hidden
+              >
+                {item.done ? "☑" : "☐"}
+              </span>
+              <span className={item.done ? "text-slate-500 line-through" : undefined}>
+                {item.text}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {data.items.length > 0 ? (
+        <Button variant="ghost" className="text-xs" onClick={() => onAppendActions(data.items)}>
+          Add to note
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+function TitleResult({
+  data,
+  onApplyTitle,
+}: {
+  data: AITitleResult;
+  onApplyTitle: (title: string) => void;
+}) {
+  return (
+    <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900/60">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Suggested</p>
+      <p className="text-sm font-medium leading-snug text-slate-800 dark:text-slate-100">
+        {data.title}
+      </p>
+      <Button variant="ghost" className="text-xs" onClick={() => onApplyTitle(data.title)}>
+        Use this title
+      </Button>
+    </div>
   );
 }
 
@@ -63,22 +185,38 @@ function HistoryList({ entries }: { entries: AIHistoryEntry[] }) {
     return <p className="text-xs text-slate-400">No generations yet for this note.</p>;
   }
   return (
-    <ul className="max-h-40 space-y-2 overflow-y-auto text-xs">
-      {entries.map((entry) => (
-        <li
-          key={entry.id}
-          className="rounded-md border border-slate-200 px-2 py-1.5 dark:border-slate-700"
-        >
-          <span className="font-medium capitalize">{entry.type}</span>
-          <span className="text-slate-400"> · {entry.provider}</span>
-          <span className="block text-slate-400">
-            {new Date(entry.created_at).toLocaleString(undefined, {
-              dateStyle: "short",
-              timeStyle: "short",
-            })}
-          </span>
-        </li>
-      ))}
+    <ul className="max-h-44 space-y-2 overflow-y-auto text-xs">
+      {entries.map((entry) => {
+        const info = getAIProviderInfo(entry.provider);
+        return (
+          <li
+            key={entry.id}
+            className="rounded-md border border-slate-200 px-2.5 py-2 dark:border-slate-700"
+          >
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="font-medium capitalize text-slate-700 dark:text-slate-200">
+                {entry.type}
+              </span>
+              <span
+                className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                  info.tone === "local"
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                    : "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
+                }`}
+                title={info.title}
+              >
+                {info.label}
+              </span>
+            </div>
+            <span className="mt-0.5 block text-slate-400">
+              {new Date(entry.created_at).toLocaleString(undefined, {
+                dateStyle: "short",
+                timeStyle: "short",
+              })}
+            </span>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -139,8 +277,9 @@ export function NoteAIPanel({
     <aside className="flex w-full shrink-0 flex-col border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50 lg:w-80 lg:border-l lg:border-t-0">
       <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Assist</h2>
-        <p className="mt-0.5 text-xs text-slate-500">
-          Summaries, tasks, and titles from your note — works offline with local rules.
+        <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
+          Summaries, tasks, and titles from your note. Uses Ollama when available, otherwise smart
+          offline rules.
         </p>
       </div>
 
@@ -157,21 +296,11 @@ export function NoteAIPanel({
               provider={summary.provider}
               error={summary.error}
               isLoading={isSummaryLoading}
+              loadingLabel="Summarizing your note…"
               onGenerate={onGenerateSummary}
               canGenerate={hasContent}
             >
-              {summary.data ? (
-                <div className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                  <p>{summary.data.summary}</p>
-                  {summary.data.bullets.length > 0 ? (
-                    <ul className="list-inside list-disc space-y-1 text-xs text-slate-600 dark:text-slate-400">
-                      {summary.data.bullets.map((b) => (
-                        <li key={b}>{b}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-              ) : null}
+              {summary.data ? <SummaryCard data={summary.data} /> : null}
             </FeatureBlock>
 
             <FeatureBlock
@@ -180,38 +309,12 @@ export function NoteAIPanel({
               provider={actions.provider}
               error={actions.error}
               isLoading={isActionsLoading}
+              loadingLabel="Finding action items…"
               onGenerate={onGenerateActions}
               canGenerate={hasContent}
             >
               {actions.data ? (
-                <div className="space-y-2">
-                  {actions.data.items.length === 0 ? (
-                    <p className="text-sm text-slate-500">No action items found in this note.</p>
-                  ) : (
-                    <ul className="space-y-1.5 text-sm">
-                      {actions.data.items.map((item) => (
-                        <li
-                          key={item.text}
-                          className="flex gap-2 text-slate-700 dark:text-slate-300"
-                        >
-                          <span className="text-slate-400" aria-hidden>
-                            ☐
-                          </span>
-                          <span>{item.text}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {actions.data.items.length > 0 ? (
-                    <Button
-                      variant="ghost"
-                      className="text-xs"
-                      onClick={() => onAppendActions(actions.data!.items)}
-                    >
-                      Add to note
-                    </Button>
-                  ) : null}
-                </div>
+                <ActionsResult data={actions.data} onAppendActions={onAppendActions} />
               ) : null}
             </FeatureBlock>
 
@@ -221,23 +324,11 @@ export function NoteAIPanel({
               provider={title.provider}
               error={title.error}
               isLoading={isTitleLoading}
+              loadingLabel="Suggesting a title…"
               onGenerate={onGenerateTitle}
               canGenerate={hasContent}
             >
-              {title.data ? (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-                    {title.data.title}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    className="text-xs"
-                    onClick={() => onApplyTitle(title.data!.title)}
-                  >
-                    Use this title
-                  </Button>
-                </div>
-              ) : null}
+              {title.data ? <TitleResult data={title.data} onApplyTitle={onApplyTitle} /> : null}
             </FeatureBlock>
           </>
         )}
@@ -252,7 +343,10 @@ export function NoteAIPanel({
           </button>
           {showHistory ? (
             isHistoryLoading ? (
-              <Spinner className="h-4 w-4" />
+              <div className="flex items-center gap-2 py-2">
+                <Spinner className="h-4 w-4" />
+                <span className="text-xs text-slate-400">Loading history…</span>
+              </div>
             ) : (
               <HistoryList entries={history} />
             )

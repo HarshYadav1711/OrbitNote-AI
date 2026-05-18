@@ -11,10 +11,14 @@ from app.services.note_service import get_user_note
 router = APIRouter(prefix="/notes", tags=["ai"])
 
 
-def _resolve_content(note, payload: AIGenerateRequest) -> tuple[str, str]:
+def _resolve_content(note, payload: AIGenerateRequest) -> tuple[str, str, str | None]:
     content = payload.content if payload.content is not None else note.content
     title = payload.title if payload.title is not None else note.title
-    return content, title
+    if payload.category is not None:
+        category = payload.category.strip() or None
+    else:
+        category = note.category
+    return content, title, category
 
 
 @router.post("/{note_id}/ai/summary", response_model=AIGenerateResponse)
@@ -27,8 +31,10 @@ async def generate_summary(
     note = get_user_note(db, user.id, note_id)
     if not note:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
-    content, title = _resolve_content(note, payload)
-    return await ai_service.generate_summary(db, note, user.id, content, title)
+    content, title, category = _resolve_content(note, payload)
+    return await ai_service.generate_summary(
+        db, note, user.id, content, title, category=category
+    )
 
 
 @router.post("/{note_id}/ai/actions", response_model=AIGenerateResponse)
@@ -41,8 +47,10 @@ async def extract_actions(
     note = get_user_note(db, user.id, note_id)
     if not note:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
-    content, title = _resolve_content(note, payload)
-    return await ai_service.extract_actions(db, note, user.id, content, title)
+    content, title, category = _resolve_content(note, payload)
+    return await ai_service.extract_actions(
+        db, note, user.id, content, title, category=category
+    )
 
 
 @router.post("/{note_id}/ai/title", response_model=AIGenerateResponse)
@@ -55,8 +63,10 @@ async def suggest_title(
     note = get_user_note(db, user.id, note_id)
     if not note:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
-    content, title = _resolve_content(note, payload)
-    return await ai_service.suggest_title(db, note, user.id, content, title)
+    content, title, category = _resolve_content(note, payload)
+    return await ai_service.suggest_title(
+        db, note, user.id, content, title, category=category
+    )
 
 
 @router.get("/{note_id}/ai/history", response_model=list[AIHistoryResponse])

@@ -45,6 +45,7 @@ export type NotePayload = {
 export type AIGeneratePayload = {
   content?: string;
   title?: string;
+  category?: string | null;
 };
 
 async function request<T>(

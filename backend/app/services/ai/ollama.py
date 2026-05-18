@@ -5,6 +5,7 @@ import httpx
 
 from app.config import settings
 from app.schemas.ai import ActionItem, AIActionsResult, AISummaryResult, AITitleResult
+from app.services.ai.context import note_context_block
 
 logger = logging.getLogger(__name__)
 
@@ -48,12 +49,22 @@ async def is_available() -> bool:
         return False
 
 
-async def generate_summary(content: str, title: str) -> AISummaryResult | None:
-    prompt = f"""Summarize the note below as JSON only.
-Return: {{"summary": "one concise paragraph", "bullets": ["key point 1", "key point 2"]}}
-Keep summary under 280 characters. Max 4 bullets. Be factual; do not invent details.
+async def generate_summary(
+    content: str, title: str, category: str | None = None
+) -> AISummaryResult | None:
+    ctx = note_context_block(title, category)
+    prompt = f"""You are a precise note assistant. Respond with valid JSON only — no markdown fences or commentary.
 
-Title: {title or "Untitled"}
+Task: Summarize the note for quick review.
+Output schema: {{"summary": "one paragraph", "bullets": ["takeaway 1", "takeaway 2"]}}
+
+Rules:
+- summary: one tight paragraph, max 280 characters, factual only
+- bullets: 2–4 distinct takeaways; omit if they repeat the summary
+- Use only information present in the note; do not invent names, dates, or outcomes
+- Match the tone of the note (meeting notes, journal, checklist, etc.)
+
+{ctx}
 ---
 {content[:6000]}
 """
@@ -71,11 +82,23 @@ Title: {title or "Untitled"}
         return None
 
 
-async def extract_actions(content: str) -> AIActionsResult | None:
-    prompt = f"""Extract action items from the note below as JSON only.
-Return: {{"items": [{{"text": "action description", "done": false}}]}}
-Only include tasks explicitly stated or clearly implied. Max 12 items. No fluff.
+async def extract_actions(
+    content: str, title: str, category: str | None = None
+) -> AIActionsResult | None:
+    ctx = note_context_block(title, category)
+    prompt = f"""You are a precise note assistant. Respond with valid JSON only — no markdown fences or commentary.
 
+Task: Extract actionable tasks from the note.
+Output schema: {{"items": [{{"text": "clear imperative task", "done": false}}]}}
+
+Rules:
+- Only tasks explicitly stated or strongly implied in the note
+- Each text: short and actionable; start with a verb when natural
+- Set done to true only if the note shows completion ([x], "done", "completed")
+- Max 12 items; return an empty items array if none found
+- Skip vague observations that are not tasks
+
+{ctx}
 ---
 {content[:6000]}
 """
@@ -98,12 +121,22 @@ Only include tasks explicitly stated or clearly implied. Max 12 items. No fluff.
         return None
 
 
-async def suggest_title(content: str, current_title: str) -> AITitleResult | None:
-    prompt = f"""Suggest a short note title from the content below as JSON only.
-Return: {{"title": "suggested title"}}
-Title must be under 80 characters, specific, and grounded in the content. No quotes or emojis.
+async def suggest_title(
+    content: str, current_title: str, category: str | None = None
+) -> AITitleResult | None:
+    ctx = note_context_block(current_title, category)
+    prompt = f"""You are a precise note assistant. Respond with valid JSON only — no markdown fences or commentary.
 
-Current title: {current_title or "Untitled"}
+Task: Suggest a specific, scannable note title.
+Output schema: {{"title": "suggested title"}}
+
+Rules:
+- Max 80 characters
+- Specific to the main topic — avoid generic titles ("Notes", "Meeting", "Untitled")
+- No quotes, emojis, or trailing punctuation
+- Ground the title in the note content; refine the current title if it is vague
+
+{ctx}
 ---
 {content[:4000]}
 """

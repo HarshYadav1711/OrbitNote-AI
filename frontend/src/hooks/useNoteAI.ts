@@ -39,7 +39,7 @@ function isTitle(r: AIGenerateResponse["result"]): r is AITitleResult {
 
 export function useNoteAI(
   noteId: number | null,
-  draft: { content: string; title: string } | null,
+  draft: { content: string; title: string; category: string } | null,
 ) {
   const queryClient = useQueryClient();
   const [summary, setSummary] = useState(() => emptyFeature<AISummaryResult>());
@@ -49,7 +49,11 @@ export function useNoteAI(
 
   const payload = (): AIGeneratePayload | undefined => {
     if (!draft) return undefined;
-    return { content: draft.content, title: draft.title };
+    return {
+      content: draft.content,
+      title: draft.title,
+      category: draft.category.trim() || null,
+    };
   };
 
   const historyQuery = useQuery({

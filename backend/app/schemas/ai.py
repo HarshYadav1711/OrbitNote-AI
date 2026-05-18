@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 class AIGenerateRequest(BaseModel):
     content: str | None = None
     title: str | None = None
+    category: str | None = None
 
 
 class ActionItem(BaseModel):

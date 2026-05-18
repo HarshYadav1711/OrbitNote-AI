@@ -68,6 +68,25 @@ def test_ai_uses_draft_content(client):
     assert "launch" in title or "orbitnote" in title or "checklist" in title or "beta" in title
 
 
+def test_ai_uses_draft_category(client):
+    note_id = _signup_and_note(client, "Sprint planning outcomes and deadlines.", title="Untitled")
+
+    res = client.post(
+        f"/notes/{note_id}/ai/summary",
+        json={
+            "content": "Sprint planning outcomes and deadlines.",
+            "title": "Planning",
+            "category": "Work",
+        },
+    )
+    assert res.status_code == 200
+    body = res.json()
+    assert body["provider"] in ("ollama", "fallback")
+    if body["provider"] == "fallback":
+        bullets = body["result"]["bullets"]
+        assert any("work" in b.lower() for b in bullets)
+
+
 def test_ai_history(client):
     note_id = _signup_and_note(client, "History test note with enough content to summarize.")
 

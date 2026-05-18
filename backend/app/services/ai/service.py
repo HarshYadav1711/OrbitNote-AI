@@ -11,6 +11,7 @@ from app.schemas.ai import (
     AITitleResult,
 )
 from app.services.ai import fallback, ollama
+from app.services.ai.context import normalize_category
 
 AI_TYPE_SUMMARY = "summary"
 AI_TYPE_ACTIONS = "actions"
@@ -43,31 +44,43 @@ def _record_history(
     return entry
 
 
-async def _try_ollama_summary(content: str, title: str) -> AISummaryResult | None:
+async def _try_ollama_summary(
+    content: str, title: str, category: str | None
+) -> AISummaryResult | None:
     if await ollama.is_available():
-        return await ollama.generate_summary(content, title)
+        return await ollama.generate_summary(content, title, category)
     return None
 
 
-async def _try_ollama_actions(content: str) -> AIActionsResult | None:
+async def _try_ollama_actions(
+    content: str, title: str, category: str | None
+) -> AIActionsResult | None:
     if await ollama.is_available():
-        return await ollama.extract_actions(content)
+        return await ollama.extract_actions(content, title, category)
     return None
 
 
-async def _try_ollama_title(content: str, title: str) -> AITitleResult | None:
+async def _try_ollama_title(
+    content: str, title: str, category: str | None
+) -> AITitleResult | None:
     if await ollama.is_available():
-        return await ollama.suggest_title(content, title)
+        return await ollama.suggest_title(content, title, category)
     return None
 
 
 async def generate_summary(
-    db: Session, note: Note, user_id: int, content: str, title: str
+    db: Session,
+    note: Note,
+    user_id: int,
+    content: str,
+    title: str,
+    category: str | None = None,
 ) -> AIGenerateResponse:
-    result = await _try_ollama_summary(content, title)
+    cat = normalize_category(category if category is not None else note.category)
+    result = await _try_ollama_summary(content, title, cat)
     provider = "ollama" if result else "fallback"
     if result is None:
-        result = fallback.generate_summary(content, title)
+        result = fallback.generate_summary(content, title, cat)
     entry = _record_history(
         db,
         note=note,
@@ -87,13 +100,18 @@ async def generate_summary(
 
 
 async def extract_actions(
-    db: Session, note: Note, user_id: int, content: str, title: str
+    db: Session,
+    note: Note,
+    user_id: int,
+    content: str,
+    title: str,
+    category: str | None = None,
 ) -> AIGenerateResponse:
-    _ = title
-    result = await _try_ollama_actions(content)
+    cat = normalize_category(category if category is not None else note.category)
+    result = await _try_ollama_actions(content, title, cat)
     provider = "ollama" if result else "fallback"
     if result is None:
-        result = fallback.extract_actions(content)
+        result = fallback.extract_actions(content, title, cat)
     entry = _record_history(
         db,
         note=note,
@@ -113,12 +131,18 @@ async def extract_actions(
 
 
 async def suggest_title(
-    db: Session, note: Note, user_id: int, content: str, title: str
+    db: Session,
+    note: Note,
+    user_id: int,
+    content: str,
+    title: str,
+    category: str | None = None,
 ) -> AIGenerateResponse:
-    result = await _try_ollama_title(content, title)
+    cat = normalize_category(category if category is not None else note.category)
+    result = await _try_ollama_title(content, title, cat)
     provider = "ollama" if result else "fallback"
     if result is None:
-        result = fallback.suggest_title(content, title)
+        result = fallback.suggest_title(content, title, cat)
     entry = _record_history(
         db,
         note=note,
