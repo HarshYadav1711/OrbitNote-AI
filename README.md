@@ -15,6 +15,12 @@ OrbitNote is for people who want a **fast editor**, **simple organization** (cat
 
 Authentication uses **httpOnly JWT cookies**; protected routes require a valid session.
 
+## Demo video
+
+End-to-end product walkthrough (~3–5 min): **[OrbitNote.mp4 on Google Drive](https://drive.google.com/drive/folders/1HESjosIFW9aj76Y47DUcGihZYV47w481?usp=drive_link)**.
+
+Screenshots and script notes live in [`demo/`](demo/) (see [`demo/DEMO.md`](demo/DEMO.md)). The `.mp4` is excluded from Git due to GitHub’s file size limit.
+
 ## Architecture
 
 ```text
