@@ -56,7 +56,10 @@ export function parseApiDetail(detail: unknown): string {
 }
 
 /** Normalize any thrown value to a user-facing message. */
-export function getErrorMessage(err: unknown, fallback = ERROR_COPY.requestFailed): string {
+export function getErrorMessage(
+  err: unknown,
+  fallback: string = ERROR_COPY.requestFailed,
+): string {
   if (err instanceof ApiError) return err.message;
   if (err instanceof Error && err.message) return err.message;
   return fallback;
