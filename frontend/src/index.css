@@ -6,6 +6,93 @@ body {
   @apply antialiased;
 }
 
+@layer components {
+  .weekly-chart-bar {
+    width: 100%;
+    max-width: 2rem;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+    background-color: rgb(59 130 246 / 0.8);
+  }
+
+  :is(.dark) .weekly-chart-bar {
+    background-color: rgb(96 165 250 / 0.7);
+  }
+
+  .weekly-chart-bar[data-h="4"] {
+    height: 4px;
+  }
+  .weekly-chart-bar[data-h="8"] {
+    height: 8px;
+  }
+  .weekly-chart-bar[data-h="12"] {
+    height: 12px;
+  }
+  .weekly-chart-bar[data-h="16"] {
+    height: 16px;
+  }
+  .weekly-chart-bar[data-h="20"] {
+    height: 20px;
+  }
+  .weekly-chart-bar[data-h="24"] {
+    height: 24px;
+  }
+  .weekly-chart-bar[data-h="28"] {
+    height: 28px;
+  }
+  .weekly-chart-bar[data-h="32"] {
+    height: 32px;
+  }
+  .weekly-chart-bar[data-h="36"] {
+    height: 36px;
+  }
+  .weekly-chart-bar[data-h="40"] {
+    height: 40px;
+  }
+  .weekly-chart-bar[data-h="44"] {
+    height: 44px;
+  }
+  .weekly-chart-bar[data-h="48"] {
+    height: 48px;
+  }
+  .weekly-chart-bar[data-h="52"] {
+    height: 52px;
+  }
+  .weekly-chart-bar[data-h="56"] {
+    height: 56px;
+  }
+  .weekly-chart-bar[data-h="60"] {
+    height: 60px;
+  }
+  .weekly-chart-bar[data-h="64"] {
+    height: 64px;
+  }
+  .weekly-chart-bar[data-h="68"] {
+    height: 68px;
+  }
+  .weekly-chart-bar[data-h="72"] {
+    height: 72px;
+  }
+  .weekly-chart-bar[data-h="76"] {
+    height: 76px;
+  }
+  .weekly-chart-bar[data-h="80"] {
+    height: 80px;
+  }
+  .weekly-chart-bar[data-h="84"] {
+    height: 84px;
+  }
+  .weekly-chart-bar[data-h="88"] {
+    height: 88px;
+  }
+  .weekly-chart-bar[data-h="92"] {
+    height: 92px;
+  }
+  .weekly-chart-bar[data-h="96"] {
+    height: 96px;
+  }
+}
+
 @layer utilities {
   .sr-only {
     position: absolute;

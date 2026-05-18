@@ -26,13 +26,14 @@ function WeeklyChart({ days }: { days: WeeklyActivityDay[] }) {
     <div className="mt-4 flex items-end justify-between gap-2">
       {days.map((day) => {
         const total = day.notes_updated + day.ai_requests;
-        const height = Math.max(4, Math.round((total / maxVal) * 96));
+        const rawHeight = Math.max(4, Math.round((total / maxVal) * 96));
+        const barHeight = Math.min(96, Math.round(rawHeight / 4) * 4);
         return (
           <div key={day.date} className="flex flex-1 flex-col items-center gap-1">
             <div className="flex h-24 w-full items-end justify-center">
               <div
-                className="w-full max-w-8 rounded-t bg-brand-500/80 dark:bg-brand-400/70"
-                style={{ height: `${height}px` }}
+                className="weekly-chart-bar w-full max-w-8"
+                data-h={String(barHeight)}
                 title={`${day.notes_updated} edits, ${day.ai_requests} AI runs`}
               />
             </div>
