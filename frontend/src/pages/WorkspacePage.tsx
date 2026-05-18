@@ -37,7 +37,7 @@ export function WorkspacePage() {
     archived: false,
   });
 
-  const debouncedSearch = useDebounce(filters.search, 300);
+  const debouncedSearch = useDebounce(filters.search, 200);
 
   const notesQuery = useQuery({
     queryKey: ["notes", filters.archived, debouncedSearch, filters.tag, filters.category],
@@ -47,7 +47,9 @@ export function WorkspacePage() {
         q: debouncedSearch || undefined,
         tag: filters.tag || undefined,
         category: filters.category || undefined,
+        sort: "updated_desc",
       }),
+    placeholderData: (prev) => prev,
   });
 
   const allNotesQuery = useQuery({
@@ -102,7 +104,7 @@ export function WorkspacePage() {
         onFiltersChange={(patch) => setFilters((f) => ({ ...f, ...patch }))}
         onSelectNote={handleSelectNote}
         onCreateNote={handleCreateNote}
-        isLoading={notesQuery.isLoading}
+        isLoading={notesQuery.isLoading || notesQuery.isFetching}
         isCreating={createMutation.isPending}
         categories={categories}
         tags={tags}

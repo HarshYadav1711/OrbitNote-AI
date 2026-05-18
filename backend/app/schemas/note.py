@@ -31,6 +31,8 @@ class NoteResponse(BaseModel):
     content: str
     category: str | None
     is_archived: bool
+    is_public: bool
+    share_token: str | None
     tags: list[TagResponse]
     created_at: datetime
     updated_at: datetime

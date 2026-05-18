@@ -1,4 +1,12 @@
-import type { AIGenerateResponse, AIHistoryEntry, Note, User } from "../types";
+import type {
+  AIGenerateResponse,
+  AIHistoryEntry,
+  DashboardData,
+  Note,
+  PublicNote,
+  ShareLink,
+  User,
+} from "../types";
 
 const API_BASE = "/api";
 
@@ -23,9 +31,13 @@ export type AIGeneratePayload = {
   title?: string;
 };
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(
+  path: string,
+  options: RequestInit = {},
+  auth = true,
+): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
-    credentials: "include",
+    credentials: auth ? "include" : "omit",
     headers: {
       "Content-Type": "application/json",
       ...(options.headers ?? {}),
@@ -96,4 +108,11 @@ export const api = {
       body: JSON.stringify(body ?? {}),
     }),
   aiHistory: (id: number) => request<AIHistoryEntry[]>(`/notes/${id}/ai/history`),
+  enableShare: (id: number) =>
+    request<ShareLink>(`/notes/${id}/share`, { method: "POST" }),
+  disableShare: (id: number) =>
+    request<ShareLink>(`/notes/${id}/share`, { method: "DELETE" }),
+  publicNote: (token: string) =>
+    request<PublicNote>(`/public/notes/${token}`, {}, false),
+  dashboard: () => request<DashboardData>("/analytics/dashboard"),
 };

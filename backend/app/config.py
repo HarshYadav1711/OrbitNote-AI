@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 60 * 24 * 7
     cookie_name: str = "orbitnote_token"
     cors_origins: str = "http://localhost:5173"
+    frontend_origin: str = "http://localhost:5173"
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2"
     ollama_timeout_seconds: float = 30.0

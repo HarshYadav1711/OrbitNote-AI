@@ -26,6 +26,8 @@ class Note(Base):
     content: Mapped[str] = mapped_column(Text, default="")
     category: Mapped[str | None] = mapped_column(String(80), nullable=True)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_public: Mapped[bool] = mapped_column(Boolean, default=False)
+    share_token: Mapped[str | None] = mapped_column(String(64), unique=True, index=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow

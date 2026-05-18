@@ -3,11 +3,14 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models import Note, User
 from app.schemas.note import NoteCreate, NoteResponse, NoteUpdate
+from app.schemas.share import ShareLinkResponse
 from app.services.note_service import get_user_note, list_notes, sync_tags
+from app.services.share_service import disable_sharing, enable_sharing
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
@@ -86,3 +89,43 @@ def update_note(
     db.commit()
     db.refresh(note)
     return _serialize(note)
+
+
+def _share_url(token: str | None) -> str | None:
+    if not token:
+        return None
+    return f"{settings.frontend_origin.rstrip('/')}/share/{token}"
+
+
+@router.post("/{note_id}/share", response_model=ShareLinkResponse)
+def enable_note_share(
+    note_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    note = get_user_note(db, user.id, note_id)
+    if not note:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
+    enable_sharing(db, note)
+    db.commit()
+    db.refresh(note)
+    return ShareLinkResponse(
+        is_public=True,
+        share_token=note.share_token,
+        share_url=_share_url(note.share_token),
+    )
+
+
+@router.delete("/{note_id}/share", response_model=ShareLinkResponse)
+def disable_note_share(
+    note_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    note = get_user_note(db, user.id, note_id)
+    if not note:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
+    disable_sharing(db, note)
+    db.commit()
+    db.refresh(note)
+    return ShareLinkResponse(is_public=False, share_token=None, share_url=None)

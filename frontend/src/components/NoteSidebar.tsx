@@ -102,19 +102,28 @@ export function NoteSidebar({
               </select>
             ) : null}
             {tags.length > 0 ? (
-              <select
-                aria-label="Filter by tag"
-                value={filters.tag}
-                onChange={(e) => onFiltersChange({ tag: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs dark:border-slate-700 dark:bg-slate-900"
-              >
-                <option value="">All tags</option>
-                {tags.map((t) => (
-                  <option key={t} value={t}>
-                    #{t}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-slate-400">
+                  Tags
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  <FilterChip
+                    active={!filters.tag}
+                    onClick={() => onFiltersChange({ tag: "" })}
+                  >
+                    All
+                  </FilterChip>
+                  {tags.map((t) => (
+                    <FilterChip
+                      key={t}
+                      active={filters.tag === t}
+                      onClick={() => onFiltersChange({ tag: t })}
+                    >
+                      #{t}
+                    </FilterChip>
+                  ))}
+                </div>
+              </div>
             ) : null}
           </div>
         )}
@@ -146,7 +155,15 @@ export function NoteSidebar({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="truncate text-sm font-medium">{note.title}</span>
-                      <span className="shrink-0 text-[10px] text-slate-400">
+                      <span className="flex shrink-0 items-center gap-1 text-[10px] text-slate-400">
+                        {note.is_public ? (
+                          <span
+                            className="rounded bg-emerald-100 px-1 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                            title="Shared publicly"
+                          >
+                            link
+                          </span>
+                        ) : null}
                         {formatRelative(note.updated_at)}
                       </span>
                     </div>

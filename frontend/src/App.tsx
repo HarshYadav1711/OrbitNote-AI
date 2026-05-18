@@ -6,12 +6,15 @@ import { AuthLayout } from "./layouts/AuthLayout";
 import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { PublicNotePage } from "./pages/PublicNotePage";
 import { WorkspacePage } from "./pages/WorkspacePage";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/share/:token" element={<PublicNotePage />} />
       <Route element={<GuestRoute />}>
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
@@ -21,6 +24,7 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/app" element={<WorkspacePage />} />
+          <Route path="/app/dashboard" element={<DashboardPage />} />
           <Route path="/app/:noteId" element={<WorkspacePage />} />
         </Route>
       </Route>

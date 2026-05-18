@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from alembic import command
 from alembic.config import Config
-from app.api import ai, auth, notes
+from app.api import ai, analytics, auth, notes, public
 from app.config import settings
 from app.database import ensure_sqlite_directory
 
@@ -36,8 +36,10 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(public.router)
 app.include_router(notes.router)
 app.include_router(ai.router)
+app.include_router(analytics.router)
 
 
 @app.get("/health")

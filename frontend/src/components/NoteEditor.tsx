@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "./Button";
 import { EmptyState } from "./EmptyState";
 import { NoteAIPanel } from "./NoteAIPanel";
+import { ShareControls } from "./ShareControls";
 import { SaveStatus } from "./SaveStatus";
 import { Spinner } from "./Spinner";
 import { useNoteAI } from "../hooks/useNoteAI";
@@ -174,6 +175,10 @@ export function NoteEditor({
             placeholder="Start writing…"
             className="mt-6 min-h-[40vh] w-full flex-1 resize-none border-0 bg-transparent text-base leading-relaxed outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600 lg:min-h-[50vh]"
           />
+
+          <div className="mt-6 max-w-md">
+            <ShareControls note={note} />
+          </div>
         </div>
 
         {showAssistMobile ? <div className="lg:hidden">{assistPanel}</div> : null}
