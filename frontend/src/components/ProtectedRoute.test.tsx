@@ -26,7 +26,7 @@ describe("ProtectedRoute", () => {
       { router: { initialEntries: ["/app"] } },
     );
 
-    expect(screen.getByRole("status")).toHaveTextContent(/loading session/i);
+    expect(screen.getByRole("status")).toHaveTextContent(/checking session/i);
     expect(screen.queryByText("Workspace")).not.toBeInTheDocument();
   });
 

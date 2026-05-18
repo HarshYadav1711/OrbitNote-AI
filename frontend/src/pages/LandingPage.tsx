@@ -18,7 +18,7 @@ export function LandingPage() {
               <Spinner className="h-4 w-4" />
             ) : isAuthenticated ? (
               <Link to="/app">
-                <Button>Open workspace</Button>
+                <Button>Open notes</Button>
               </Link>
             ) : (
               <>
@@ -40,19 +40,19 @@ export function LandingPage() {
       <main className="mx-auto max-w-5xl px-4 py-20">
         <div className="max-w-2xl">
           <p className="text-sm font-medium uppercase tracking-wide text-brand-600">
-            Notes workspace
+            Notes for focused teams
           </p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
             Write, organize, and share with calm focus
           </h1>
           <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-            OrbitNote combines a fast editor, optional local AI assist, public read-only links, and
-            a productivity dashboard—without locking you into a cloud stack on day one.
+            A fast editor, built-in assist, read-only sharing, and a clear view of your work—all in
+            one workspace.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             {isAuthenticated ? (
               <Link to="/app">
-                <Button className="px-5 py-2.5">Open workspace</Button>
+                <Button className="px-5 py-2.5">Open notes</Button>
               </Link>
             ) : (
               <>
@@ -73,20 +73,20 @@ export function LandingPage() {
           {[
             {
               title: "Autosave editor",
-              body: "Categories, tags, and debounced saves keep your notes current without friction.",
+              body: "Categories, tags, and live preview keep every note organized as you write.",
             },
             {
-              title: "Assist panel",
-              body: "Summaries, action items, and titles via Ollama when available, with a reliable offline fallback.",
+              title: "Assist",
+              body: "Summaries, action items, and title suggestions from the content you already have.",
             },
             {
-              title: "Public sharing",
-              body: "Generate secure read-only links for collaborators—no account required to view.",
+              title: "Share links",
+              body: "Send read-only links to collaborators. Viewers don't need an account.",
             },
           ].map((item) => (
             <article
               key={item.title}
-              className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"
+              className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
             >
               <h2 className="font-semibold">{item.title}</h2>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{item.body}</p>

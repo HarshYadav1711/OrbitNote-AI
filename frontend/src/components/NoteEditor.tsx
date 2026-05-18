@@ -5,7 +5,7 @@ import { NoteAIPanel } from "./NoteAIPanel";
 import { ShareControls } from "./ShareControls";
 import { MarkdownPreview } from "./MarkdownPreview";
 import { SaveStatus } from "./SaveStatus";
-import { Spinner } from "./Spinner";
+import { LoadingPlaceholder } from "./LoadingPlaceholder";
 import { useNoteAI } from "../hooks/useNoteAI";
 import type { NoteDraft, SaveStatus as Status } from "../hooks/useNoteEditor";
 import type { Note } from "../types";
@@ -54,11 +54,7 @@ export function NoteEditor({
   };
 
   if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <Spinner label="Loading note…" />
-      </div>
-    );
+    return <LoadingPlaceholder label="Opening note…" />;
   }
 
   if (isError) {
@@ -66,7 +62,7 @@ export function NoteEditor({
       <div className="flex flex-1 items-center justify-center p-8">
         <EmptyState
           title="Note not found"
-          description="This note may have been removed or you no longer have access."
+          description="This note may have been deleted or you don't have access."
         />
       </div>
     );
@@ -77,7 +73,7 @@ export function NoteEditor({
       <div className="flex flex-1 items-center justify-center p-8">
         <EmptyState
           title="Select a note"
-          description="Choose a note from your workspace, or create one to draft and share with your team."
+          description="Pick a note from the list, or create one to get started."
           action={
             <Button onClick={onCreateNote} disabled={isCreating}>
               {isCreating ? "Creating…" : "New note"}
@@ -117,7 +113,7 @@ export function NoteEditor({
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-6 py-3 dark:border-slate-800">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-6 py-3.5 dark:border-slate-800">
           <SaveStatus status={saveStatus} onRetry={saveStatus === "error" ? onSaveNow : undefined} />
           <div className="flex flex-wrap items-center justify-end gap-2">
             {note.is_public && note.share_token ? (
@@ -161,7 +157,7 @@ export function NoteEditor({
             type="text"
             value={draft.title}
             onChange={(e) => onDraftChange({ title: e.target.value })}
-            placeholder="Add a title…"
+            placeholder="Title"
             aria-label="Note title"
             className="w-full border-0 bg-transparent text-2xl font-semibold outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600"
           />
@@ -175,7 +171,7 @@ export function NoteEditor({
                 type="text"
                 value={draft.category}
                 onChange={(e) => onDraftChange({ category: e.target.value })}
-                placeholder="e.g. work, personal"
+                placeholder="Work, personal…"
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-slate-900"
               />
             </label>
@@ -187,7 +183,7 @@ export function NoteEditor({
                 type="text"
                 value={draft.tags}
                 onChange={(e) => onDraftChange({ tags: e.target.value })}
-                placeholder="comma-separated"
+                placeholder="work, ideas"
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-slate-900"
               />
             </label>
@@ -198,7 +194,7 @@ export function NoteEditor({
               <textarea
                 value={draft.content}
                 onChange={(e) => onDraftChange({ content: e.target.value })}
-                placeholder="Start writing…"
+                placeholder="Write in Markdown…"
                 aria-label="Note content"
                 className="min-h-[28vh] w-full flex-1 resize-none border-0 bg-transparent text-base leading-relaxed outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600 lg:min-h-0"
               />

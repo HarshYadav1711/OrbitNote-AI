@@ -105,10 +105,10 @@ export function ShareControls({ note }: Props) {
 
       <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
         {isShared
-          ? "Anyone with the link can view a read-only copy. Only you can edit in your workspace."
+          ? "Anyone with the link can view this note. Only you can edit it."
           : revoked
-            ? "The previous link no longer works. Create a new link anytime to share again."
-            : "Generate a secure link teammates can open without an account."}
+            ? "The previous link no longer works. Create a new one to share again."
+            : "Create a link anyone can open—no account needed."}
       </p>
 
       {isShared && sharedSince ? (
@@ -119,7 +119,7 @@ export function ShareControls({ note }: Props) {
 
       {archived ? (
         <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-          Restore this note from the archive to create or copy a share link.
+          Restore this note to create or copy a share link.
         </p>
       ) : null}
 

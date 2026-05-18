@@ -8,7 +8,7 @@ export function ProtectedRoute() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Spinner label="Loading session…" />
+        <Spinner label="Checking session…" />
       </div>
     );
   }

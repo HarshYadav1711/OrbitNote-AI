@@ -35,7 +35,7 @@ export function AppLayout() {
                 Notes
               </NavLink>
               <NavLink to="/app/dashboard" className={navLinkClass}>
-                Dashboard
+                Overview
               </NavLink>
             </nav>
           </div>
@@ -45,7 +45,7 @@ export function AppLayout() {
               {user?.name}
             </span>
             <Button variant="secondary" onClick={handleLogout} disabled={logoutMutation.isPending}>
-              {logoutMutation.isPending ? "Signing out…" : "Logout"}
+              {logoutMutation.isPending ? "Signing out…" : "Sign out"}
             </Button>
           </nav>
         </div>
@@ -63,7 +63,7 @@ export function AppLayout() {
           Notes
         </NavLink>
         <NavLink to="/app/dashboard" className={({ isActive }) => mobileNavClass(isActive)}>
-          Dashboard
+          Overview
         </NavLink>
       </nav>
     </div>

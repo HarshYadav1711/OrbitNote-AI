@@ -40,7 +40,7 @@ export function SignupPage() {
           Signed in as <strong>{user.name}</strong>. Sign out first to create another account.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Button onClick={() => navigate("/app")}>Go to workspace</Button>
+          <Button onClick={() => navigate("/app")}>Open notes</Button>
           <Button
             variant="secondary"
             onClick={() =>
@@ -58,7 +58,7 @@ export function SignupPage() {
     <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <h1 className="text-2xl font-bold">Create your account</h1>
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Start with a local workspace—no credit card required.
+        Free to start. No credit card required.
       </p>
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
         <label className="block">
@@ -74,7 +74,7 @@ export function SignupPage() {
         <label className="block">
           <span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Email</span>
           <Input
-            placeholder="you@example.com"
+            placeholder="name@company.com"
             type="email"
             autoComplete="email"
             value={email}
@@ -102,7 +102,7 @@ export function SignupPage() {
           </p>
         ) : null}
         <Button className="w-full" type="submit" disabled={signupMutation.isPending}>
-          {signupMutation.isPending ? "Creating..." : "Create account"}
+          {signupMutation.isPending ? "Creating…" : "Create account"}
         </Button>
       </form>
       <p className="mt-4 text-sm">

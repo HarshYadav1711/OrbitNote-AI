@@ -23,7 +23,7 @@ export function Spinner({ className = "h-5 w-5", label }: Props) {
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
         />
       </svg>
-      {label ? <span className="text-sm">{label}</span> : null}
+      {label ? <span className="text-sm leading-none">{label}</span> : null}
     </span>
   );
 }

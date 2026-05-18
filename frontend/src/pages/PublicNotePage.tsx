@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { api } from "../api/client";
 import { EmptyState } from "../components/EmptyState";
 import { MarkdownPreview } from "../components/MarkdownPreview";
-import { Spinner } from "../components/Spinner";
+import { LoadingPlaceholder } from "../components/LoadingPlaceholder";
 import { ThemeToggle } from "../components/ThemeToggle";
 
 export function PublicNotePage() {
@@ -24,11 +24,11 @@ export function PublicNotePage() {
       <header className="border-b border-slate-200/80 bg-white/70 backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <Link to="/" className="text-lg font-bold text-brand-600">
-            OrbitNote AI
+            OrbitNote
           </Link>
           <div className="flex items-center gap-3">
             <span className="hidden text-xs text-slate-500 sm:inline dark:text-slate-400">
-              Read-only shared note
+              Shared note · read only
             </span>
             <ThemeToggle />
           </div>
@@ -37,26 +37,24 @@ export function PublicNotePage() {
 
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
         {noteQuery.isLoading ? (
-          <div className="flex justify-center py-20">
-            <Spinner label="Loading note…" />
-          </div>
+          <LoadingPlaceholder label="Opening note…" className="py-20" />
         ) : noteQuery.isError || !note ? (
           <EmptyState
             title="Note unavailable"
-            description="This link may have been revoked, expired, or the note is no longer shared publicly."
+            description="This link is invalid or sharing was turned off."
             action={
               <Link
                 to="/"
                 className="inline-flex rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
               >
-                Go to OrbitNote AI
+                Go to OrbitNote
               </Link>
             }
           />
         ) : (
           <article className="public-note-article">
             <p className="text-xs font-medium uppercase tracking-wider text-brand-600 dark:text-brand-400">
-              Shared via OrbitNote AI
+              Shared with OrbitNote
             </p>
 
             <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl dark:text-slate-50">
@@ -109,11 +107,11 @@ export function PublicNotePage() {
 
       <footer className="border-t border-slate-200 px-4 py-8 text-center dark:border-slate-800">
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Shared via <span className="font-medium text-slate-700 dark:text-slate-300">OrbitNote AI</span>
+          Shared with <span className="font-medium text-slate-700 dark:text-slate-300">OrbitNote</span>
         </p>
         <p className="mt-2 text-xs text-slate-400">
           <Link to="/signup" className="text-brand-600 hover:underline dark:text-brand-400">
-            Create your own workspace
+            Create an account
           </Link>
           {" · "}
           <Link to="/" className="hover:underline">

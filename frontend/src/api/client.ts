@@ -72,11 +72,11 @@ async function request<T>(
     if (err instanceof DOMException && err.name === "AbortError") {
       throw new Error(
         timeoutMs > DEFAULT_TIMEOUT_MS
-          ? "AI request timed out. Ollama may be slow — try again in a moment."
-          : "Could not reach the API. Is the backend running on port 8000?",
+          ? "Assist took too long. Try again in a moment."
+          : "Could not reach OrbitNote. Check your connection and try again.",
       );
     }
-    throw new Error("Could not reach the API. Is the backend running on port 8000?");
+    throw new Error("Could not reach OrbitNote. Check your connection and try again.");
   }
 
   if (!res.ok) {
@@ -123,7 +123,7 @@ export const api = {
         headers: { "Content-Type": "application/json" },
       });
     } catch {
-      throw new Error("Could not reach the API. Is the backend running on port 8000?");
+      throw new Error("Could not reach OrbitNote. Check your connection and try again.");
     }
     if (res.status === 401) return null;
     if (!res.ok) {

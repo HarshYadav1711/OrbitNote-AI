@@ -36,11 +36,11 @@ export function LoginPage() {
       <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <h1 className="text-2xl font-bold">Already signed in</h1>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-          You have an active session as <strong>{user.name}</strong> ({user.email}). The browser
-          keeps you logged in until you sign out — that is why you were not asked for a password.
+          Signed in as <strong>{user.name}</strong> ({user.email}). Continue to your notes or sign
+          out to use another account.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Button onClick={() => navigate("/app")}>Go to workspace</Button>
+          <Button onClick={() => navigate("/app")}>Open notes</Button>
           <Button
             variant="secondary"
             onClick={() =>
@@ -58,12 +58,12 @@ export function LoginPage() {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <h1 className="text-2xl font-bold">Welcome back</h1>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Sign in to your workspace.</p>
+      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Sign in to continue.</p>
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
         <label className="block">
           <span className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Email</span>
           <Input
-            placeholder="you@example.com"
+            placeholder="name@company.com"
             type="email"
             autoComplete="email"
             value={email}
@@ -76,7 +76,7 @@ export function LoginPage() {
             Password
           </span>
           <Input
-            placeholder="Your password"
+            placeholder="Password"
             type="password"
             autoComplete="current-password"
             value={password}

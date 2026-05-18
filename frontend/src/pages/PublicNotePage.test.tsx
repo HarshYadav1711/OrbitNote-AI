@@ -20,7 +20,7 @@ describe("PublicNotePage", () => {
       { router: { initialEntries: ["/share/demo-token"] } },
     );
 
-    expect(screen.getByRole("status")).toHaveTextContent(/loading note/i);
+    expect(screen.getByRole("status")).toHaveTextContent(/opening note/i);
   });
 
   it("shows an unavailable message when the share link fails", async () => {
@@ -35,7 +35,7 @@ describe("PublicNotePage", () => {
 
     expect(await screen.findByText("Note unavailable")).toBeInTheDocument();
     expect(
-      screen.getByText(/link may have been revoked/i),
+      screen.getByText(/link is invalid|sharing was turned off/i),
     ).toBeInTheDocument();
   });
 

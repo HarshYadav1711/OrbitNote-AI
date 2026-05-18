@@ -150,16 +150,16 @@ export function NoteSidebar({
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {isLoading ? (
-          <div className="flex justify-center py-10">
+          <div className="flex min-h-[10rem] items-center justify-center py-10" aria-busy="true">
             <Spinner label="Loading notes…" />
           </div>
         ) : notes.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+          <p className="px-4 py-10 text-center text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             {filters.archived
-              ? "No archived notes yet. Archive notes you are done collaborating on."
+              ? "No archived notes."
               : filters.search || filters.tag || filters.category
-                ? "No notes match your filters. Try adjusting search or tags."
-                : "Your workspace is ready. Create a note and share a link when you need input."}
+                ? "No matches. Try different filters or search."
+                : "No notes in this view."}
           </p>
         ) : (
           <ul className="p-2">
@@ -198,7 +198,7 @@ export function NoteSidebar({
                       </span>
                     </div>
                     <p className="mt-0.5 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
-                      {note.content.trim() || "Empty note"}
+                      {note.content.trim() || "No content"}
                     </p>
                     {(note.category || note.tags.length > 0) && (
                       <div className="mt-1.5 flex flex-wrap gap-1">

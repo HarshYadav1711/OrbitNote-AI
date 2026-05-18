@@ -21,8 +21,15 @@ function ProviderBadge({ provider }: { provider: string }) {
   );
 }
 
+const HISTORY_TYPE_LABELS: Record<string, string> = {
+  summary: "Summary",
+  actions: "Action items",
+  title: "Title",
+};
+
 type FeatureBlockProps = {
   label: string;
+  actionLabel: string;
   status: AIJobStatus;
   provider: string | null;
   error: string | null;
@@ -35,6 +42,7 @@ type FeatureBlockProps = {
 
 function FeatureBlock({
   label,
+  actionLabel,
   status,
   provider,
   error,
@@ -58,7 +66,7 @@ function FeatureBlock({
         onClick={onGenerate}
         disabled={!canGenerate || isLoading}
       >
-        {isLoading ? "Working…" : `Generate ${label.toLowerCase()}`}
+        {isLoading ? "Running…" : actionLabel}
       </Button>
       {isLoading ? (
         <LoadingRow label={loadingLabel} />
@@ -73,7 +81,7 @@ function FeatureBlock({
       ) : null}
       {status === "success" ? children : null}
       {status === "idle" && !isLoading ? (
-        <p className="text-xs text-slate-400">Uses your current note text, title, and category.</p>
+        <p className="text-xs text-slate-400">Based on your note title and body.</p>
       ) : null}
     </section>
   );
@@ -127,7 +135,7 @@ function ActionsResult({
     <div className="space-y-3">
       {data.items.length === 0 ? (
         <p className="rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-sm text-slate-500 dark:border-slate-700">
-          No action items found in this note.
+          No action items found.
         </p>
       ) : (
         <ul className="space-y-1.5 rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-900/60">
@@ -182,7 +190,7 @@ function TitleResult({
 
 function HistoryList({ entries }: { entries: AIHistoryEntry[] }) {
   if (entries.length === 0) {
-    return <p className="text-xs text-slate-400">No generations yet for this note.</p>;
+    return <p className="text-xs text-slate-400">No assist runs yet.</p>;
   }
   return (
     <ul className="max-h-44 space-y-2 overflow-y-auto text-xs">
@@ -194,8 +202,8 @@ function HistoryList({ entries }: { entries: AIHistoryEntry[] }) {
             className="rounded-md border border-slate-200 px-2.5 py-2 dark:border-slate-700"
           >
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="font-medium capitalize text-slate-700 dark:text-slate-200">
-                {entry.type}
+              <span className="font-medium text-slate-700 dark:text-slate-200">
+                {HISTORY_TYPE_LABELS[entry.type] ?? entry.type}
               </span>
               <span
                 className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
@@ -275,28 +283,28 @@ export function NoteAIPanel({
 }: Props) {
   return (
     <aside className="flex w-full shrink-0 flex-col border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50 lg:w-80 lg:border-l lg:border-t-0">
-      <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+      <div className="border-b border-slate-200 px-4 py-3.5 dark:border-slate-800">
         <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Assist</h2>
-        <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
-          Summaries, tasks, and titles from your note. Uses Ollama when available, otherwise smart
-          offline rules.
+        <p className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+          Summaries, action items, and title suggestions from your note.
         </p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4">
         {!hasContent ? (
-          <p className="py-6 text-center text-sm text-slate-400">
-            Add some note content to use Assist.
+          <p className="py-8 text-center text-sm text-slate-400">
+            Add note content to use Assist.
           </p>
         ) : (
           <>
             <FeatureBlock
               label="Summary"
+              actionLabel="Summarize"
               status={summary.status}
               provider={summary.provider}
               error={summary.error}
               isLoading={isSummaryLoading}
-              loadingLabel="Summarizing your note…"
+              loadingLabel="Summarizing…"
               onGenerate={onGenerateSummary}
               canGenerate={hasContent}
             >
@@ -305,6 +313,7 @@ export function NoteAIPanel({
 
             <FeatureBlock
               label="Action items"
+              actionLabel="Find action items"
               status={actions.status}
               provider={actions.provider}
               error={actions.error}
@@ -320,11 +329,12 @@ export function NoteAIPanel({
 
             <FeatureBlock
               label="Title"
+              actionLabel="Suggest title"
               status={title.status}
               provider={title.provider}
               error={title.error}
               isLoading={isTitleLoading}
-              loadingLabel="Suggesting a title…"
+              loadingLabel="Suggesting title…"
               onGenerate={onGenerateTitle}
               canGenerate={hasContent}
             >
@@ -345,7 +355,7 @@ export function NoteAIPanel({
             isHistoryLoading ? (
               <div className="flex items-center gap-2 py-2">
                 <Spinner className="h-4 w-4" />
-                <span className="text-xs text-slate-400">Loading history…</span>
+                <span className="text-xs text-slate-400">Loading…</span>
               </div>
             ) : (
               <HistoryList entries={history} />

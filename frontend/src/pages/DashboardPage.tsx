@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { EmptyState } from "../components/EmptyState";
-import { Spinner } from "../components/Spinner";
+import { LoadingPlaceholder } from "../components/LoadingPlaceholder";
 import type { WeeklyActivityDay } from "../types";
 
 const AI_TYPE_LABELS: Record<string, string> = {
@@ -34,7 +34,7 @@ function WeeklyChart({ days }: { days: WeeklyActivityDay[] }) {
               <div
                 className="weekly-chart-bar w-full max-w-8"
                 data-h={String(barHeight)}
-                title={`${day.notes_updated} edits, ${day.ai_requests} AI runs`}
+                title={`${day.notes_updated} edits, ${day.ai_requests} assist runs`}
               />
             </div>
             <span className="text-[10px] text-slate-500 dark:text-slate-400">{formatDayLabel(day.date)}</span>
@@ -55,18 +55,14 @@ export function DashboardPage() {
   });
 
   if (dashboardQuery.isLoading) {
-    return (
-      <div className="flex justify-center py-20">
-        <Spinner label="Loading dashboard…" />
-      </div>
-    );
+    return <LoadingPlaceholder label="Loading overview…" />;
   }
 
   if (dashboardQuery.isError || !dashboardQuery.data) {
     return (
       <EmptyState
-        title="Could not load dashboard"
-        description="Make sure the API is running, then refresh."
+        title="Overview unavailable"
+        description="We couldn't load your stats. Refresh to try again."
         action={
           <button
             type="button"
@@ -83,48 +79,46 @@ export function DashboardPage() {
   const data = dashboardQuery.data;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Productivity</h1>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Notes, sharing, and AI activity across your workspace.
+          Notes, sharing, and assist activity at a glance.
         </p>
-      </div>
+      </header>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="text-sm font-semibold">Team & sharing</h2>
-        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-          How your notes are distributed and assisted
-        </p>
+      <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Sharing</h2>
+        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Shared and archived notes</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <StatCard label="Shared notes" value={data.shared_notes} hint="Active public links" />
-          <StatCard label="Archived" value={data.archived_notes} hint="Stored for later" />
+          <StatCard label="Shared notes" value={data.shared_notes} hint="Active share links" />
+          <StatCard label="Archived" value={data.archived_notes} hint="Out of active list" />
           <StatCard
-            label="AI-assisted notes"
+            label="Assist-enabled notes"
             value={data.ai_assisted_notes}
-            hint="Notes with Assist runs"
+            hint="At least one assist run"
           />
         </div>
       </section>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Active notes" value={data.total_notes} />
-        <StatCard label="AI requests (7d)" value={data.ai_usage.last_7_days} />
-        <StatCard label="AI requests (all time)" value={data.ai_usage.total_requests} />
+        <StatCard label="Assist runs (7d)" value={data.ai_usage.last_7_days} />
+        <StatCard label="Assist runs (total)" value={data.ai_usage.total_requests} />
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="text-sm font-semibold">Weekly activity</h2>
-        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Note edits + AI runs per day</p>
+      <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Weekly activity</h2>
+        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Edits and assist runs per day</p>
         <WeeklyChart days={data.weekly_activity} />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-          <h2 className="text-sm font-semibold">Recently edited</h2>
+        <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Recently edited</h2>
           {data.recently_edited.length === 0 ? (
             <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-              Create a note in your workspace, then share a link when you need feedback.
+              Edited notes will appear here.
             </p>
           ) : (
             <ul className="mt-3 space-y-2">
@@ -145,10 +139,10 @@ export function DashboardPage() {
           )}
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-          <h2 className="text-sm font-semibold">Most-used tags</h2>
+        <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Most-used tags</h2>
           {data.top_tags.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Add tags to notes to see trends.</p>
+            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Tag notes to track what you work on most.</p>
           ) : (
             <ul className="mt-3 space-y-2">
               {data.top_tags.map((t) => (
@@ -162,14 +156,14 @@ export function DashboardPage() {
         </section>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="text-sm font-semibold">AI usage</h2>
+      <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Assist usage</h2>
         <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-          {data.ai_usage.total_requests} total requests across all notes
+          {data.ai_usage.total_requests} runs across all notes
         </p>
         {Object.keys(data.ai_usage.by_type).length === 0 ? (
           <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
-            Use Assist on a note to draft summaries, action items, or titles for your team.
+            Run Assist on a note to see usage breakdown here.
           </p>
         ) : (
           <ul className="mt-3 space-y-2">

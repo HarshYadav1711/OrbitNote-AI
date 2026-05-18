@@ -49,7 +49,7 @@ describe("NoteEditor", () => {
       />,
     );
 
-    expect(screen.getByRole("status")).toHaveTextContent(/loading note/i);
+    expect(screen.getByRole("status")).toHaveTextContent(/opening note/i);
   });
 
   it("shows a not-found empty state when loading failed", () => {

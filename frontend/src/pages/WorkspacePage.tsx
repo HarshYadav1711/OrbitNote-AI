@@ -236,8 +236,8 @@ export function WorkspacePage() {
         {notesQuery.isError ? (
           <div className="flex flex-1 items-center justify-center p-8">
             <EmptyState
-              title="Could not load notes"
-              description="Make sure the API is running, then refresh."
+              title="Couldn't load notes"
+              description="Check your connection and try again."
               action={
                 <Button variant="secondary" onClick={() => notesQuery.refetch()}>
                   Retry
@@ -249,10 +249,10 @@ export function WorkspacePage() {
           <div className="flex flex-1 items-center justify-center p-8">
             <EmptyState
               title="No notes yet"
-              description="Start a note for yourself or your team. When you are ready, share a read-only link—no accounts required for viewers."
+              description="Create your first note to start writing. Share a link when you're ready for feedback."
               action={
                 <Button onClick={handleCreateNote} disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Creating…" : "Create note"}
+                  {createMutation.isPending ? "Creating…" : "New note"}
                 </Button>
               }
             />
